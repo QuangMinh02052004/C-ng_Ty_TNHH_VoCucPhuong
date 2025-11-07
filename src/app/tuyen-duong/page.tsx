@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { routes } from '@/data/routes';
+import RouteArrow from '@/components/RouteArrow';
 
 export default function TuyenDuongPage() {
     return (
@@ -15,11 +16,7 @@ export default function TuyenDuongPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {routes.map((route) => (
                         <div key={route.id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-xl transition w-full max-w-sm mx-auto flex flex-col">
-                            <div className="border-b pb-4 mb-4">
-                                <h2 className="text-2xl font-bold text-blue-600 min-h-[72px] flex items-center">
-                                    {route.from} → {route.to}
-                                </h2>
-                            </div>
+                            <RouteArrow from={route.from} to={route.to} />
 
                             <div className="space-y-3 flex-grow">
                                 <div className="flex justify-between items-center">

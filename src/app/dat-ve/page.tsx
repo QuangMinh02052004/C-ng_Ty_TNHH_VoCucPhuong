@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { routes } from '@/data/routes';
 
 export default function DatVePage() {
+    const searchParams = useSearchParams();
+    const routeIdFromUrl = searchParams.get('route');
+
     const [formData, setFormData] = useState({
         routeId: '',
         customerName: '',
@@ -15,6 +19,92 @@ export default function DatVePage() {
     });
 
     const [selectedRoute, setSelectedRoute] = useState<typeof routes[0] | null>(null);
+
+    // Tự động điền tuyến đường khi có route trong URL
+    useEffect(() => {
+        if (routeIdFromUrl) {
+            const route = routes.find(r => r.id === routeIdFromUrl);
+            if (route) {
+                setSelectedRoute(route);
+                setFormData(prev => ({ ...prev, routeId: routeIdFromUrl }));
+            }
+        }
+    }, [routeIdFromUrl]);
+
+    // Lấy danh sách khung giờ theo tuyến đường
+    const getTimeSlots = () => {
+        if (!selectedRoute) return [];
+
+        const routeId = selectedRoute.id;
+        let startHour = 5;
+        let startMinute = 30;
+        let endHour = 20;
+        let endMinute = 0;
+
+        // Cấu hình khung giờ theo từng tuyến
+        switch (routeId) {
+            case '5': // Sài Gòn → Xuân Lộc (Cao tốc): 5h30 - 18h30
+                startHour = 5;
+                startMinute = 30;
+                endHour = 18;
+                endMinute = 30;
+                break;
+            case '3': // Sài Gòn → Long Khánh (Cao tốc): 5h30 - 20h
+            case '4': // Sài Gòn → Long Khánh (Quốc lộ): 5h30 - 20h
+                startHour = 5;
+                startMinute = 30;
+                endHour = 20;
+                endMinute = 0;
+                break;
+            case '6': // Sài Gòn → Xuân Lộc (Quốc lộ): 5h30 - 17h
+                startHour = 5;
+                startMinute = 30;
+                endHour = 17;
+                endMinute = 0;
+                break;
+            case '7': // Xuân Lộc → Sài Gòn (Cao tốc): 3h30 - 17h
+            case '8': // Xuân Lộc → Sài Gòn (Quốc lộ): 3h30 - 17h
+                startHour = 3;
+                startMinute = 30;
+                endHour = 17;
+                endMinute = 0;
+                break;
+            case '1': // Long Khánh → Sài Gòn (Cao tốc): 3h30 - 18h
+            case '2': // Long Khánh → Sài Gòn (Quốc lộ): 3h30 - 18h
+                startHour = 3;
+                startMinute = 30;
+                endHour = 18;
+                endMinute = 0;
+                break;
+            default:
+                startHour = 5;
+                startMinute = 30;
+                endHour = 20;
+                endMinute = 0;
+        }
+
+        // Tạo danh sách khung giờ (mỗi 30 phút)
+        const timeSlots: string[] = [];
+        let currentHour = startHour;
+        let currentMinute = startMinute;
+
+        while (
+            currentHour < endHour ||
+            (currentHour === endHour && currentMinute <= endMinute)
+        ) {
+            const timeString = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
+            timeSlots.push(timeString);
+
+            // Tăng 30 phút
+            currentMinute += 30;
+            if (currentMinute >= 60) {
+                currentMinute = 0;
+                currentHour += 1;
+            }
+        }
+
+        return timeSlots;
+    };
 
     const handleRouteChange = (routeId: string) => {
         const route = routes.find(r => r.id === routeId);
@@ -138,24 +228,72 @@ export default function DatVePage() {
 
                             {/* Thông tin chi tiết tuyến */}
                             {selectedRoute && (
-                                <div className="bg-blue-50 p-4 rounded-lg">
-                                    <h3 className="font-semibold mb-2">Thông tin tuyến đường:</h3>
-                                    <div className="grid grid-cols-2 gap-3 text-sm">
-                                        <div>
-                                            <span className="text-gray-600">Thời gian:</span>
-                                            <span className="ml-2 font-medium">{selectedRoute.duration}</span>
+                                <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6 rounded-xl border-2 border-blue-200">
+                                    <h3 className="font-bold text-lg mb-4 text-blue-800 flex items-center gap-2">
+                                        <span className="text-2xl">ℹ️</span>
+                                        Thông tin tuyến đường
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {/* Khung giờ hoạt động */}
+                                        <div className="bg-white p-4 rounded-lg border-2 border-blue-300 shadow-md">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <span className="text-2xl">🕐</span>
+                                                <span className="font-bold text-blue-800">Khung giờ hoạt động:</span>
+                                            </div>
+                                            <div className="bg-gradient-to-r from-blue-100 to-purple-100 p-3 rounded-lg">
+                                                <p className="text-center text-lg font-bold text-gray-800">
+                                                    {(() => {
+                                                        const slots = getTimeSlots();
+                                                        if (slots.length > 0) {
+                                                            return `${slots[0]} - ${slots[slots.length - 1]}`;
+                                                        }
+                                                        return 'Vui lòng chọn tuyến';
+                                                    })()}
+                                                </p>
+                                                <p className="text-center text-sm text-gray-600 mt-1">
+                                                    ⏰ Xe chạy mỗi 30 phút
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <span className="text-gray-600">Loại xe:</span>
-                                            <span className="ml-2 font-medium">{selectedRoute.busType}</span>
-                                        </div>
-                                        <div>
-                                            <span className="text-gray-600">Ghế trống:</span>
-                                            <span className="ml-2 font-medium text-green-600">{selectedRoute.availableSeats} chỗ</span>
-                                        </div>
-                                        <div>
-                                            <span className="text-gray-600">Giá vé:</span>
-                                            <span className="ml-2 font-medium text-blue-600">{selectedRoute.price.toLocaleString('vi-VN')} đ</span>
+
+                                        {/* Thông tin khác */}
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="bg-white p-3 rounded-lg border border-gray-200">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-semibold flex items-center gap-2">
+                                                        <span className="text-xl">⏱️</span>
+                                                        Thời gian:
+                                                    </span>
+                                                    <span className="font-bold text-gray-700">{selectedRoute.duration}</span>
+                                                </div>
+                                            </div>
+                                            <div className="bg-white p-3 rounded-lg border border-gray-200">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-semibold flex items-center gap-2">
+                                                        <span className="text-xl">🚌</span>
+                                                        Loại xe:
+                                                    </span>
+                                                    <span className="font-bold text-gray-700">{selectedRoute.busType}</span>
+                                                </div>
+                                            </div>
+                                            <div className="bg-white p-3 rounded-lg border border-gray-200">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-semibold flex items-center gap-2">
+                                                        <span className="text-xl">💺</span>
+                                                        Ghế trống:
+                                                    </span>
+                                                    <span className="font-bold text-green-600">{selectedRoute.availableSeats} chỗ</span>
+                                                </div>
+                                            </div>
+                                            <div className="bg-white p-3 rounded-lg border border-gray-200">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="font-semibold flex items-center gap-2">
+                                                        <span className="text-xl">💰</span>
+                                                        Giá vé:
+                                                    </span>
+                                                    <span className="font-bold text-blue-600">{selectedRoute.price.toLocaleString('vi-VN')} đ</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -230,42 +368,27 @@ export default function DatVePage() {
                                         onChange={(e) => setFormData({ ...formData, departureTime: e.target.value })}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         required
+                                        disabled={!selectedRoute}
                                     >
                                         <option value="">-- Chọn giờ --</option>
-                                        <option value="05:30" disabled={!isTimeSlotAvailable('05:30')}>05:30 {!isTimeSlotAvailable('05:30') && '(Không khả dụng)'}</option>
-                                        <option value="06:00" disabled={!isTimeSlotAvailable('06:00')}>06:00 {!isTimeSlotAvailable('06:00') && '(Không khả dụng)'}</option>
-                                        <option value="06:30" disabled={!isTimeSlotAvailable('06:30')}>06:30 {!isTimeSlotAvailable('06:30') && '(Không khả dụng)'}</option>
-                                        <option value="07:00" disabled={!isTimeSlotAvailable('07:00')}>07:00 {!isTimeSlotAvailable('07:00') && '(Không khả dụng)'}</option>
-                                        <option value="07:30" disabled={!isTimeSlotAvailable('07:30')}>07:30 {!isTimeSlotAvailable('07:30') && '(Không khả dụng)'}</option>
-                                        <option value="08:00" disabled={!isTimeSlotAvailable('08:00')}>08:00 {!isTimeSlotAvailable('08:00') && '(Không khả dụng)'}</option>
-                                        <option value="08:30" disabled={!isTimeSlotAvailable('08:30')}>08:30 {!isTimeSlotAvailable('08:30') && '(Không khả dụng)'}</option>
-                                        <option value="09:00" disabled={!isTimeSlotAvailable('09:00')}>09:00 {!isTimeSlotAvailable('09:00') && '(Không khả dụng)'}</option>
-                                        <option value="09:30" disabled={!isTimeSlotAvailable('09:30')}>09:30 {!isTimeSlotAvailable('09:30') && '(Không khả dụng)'}</option>
-                                        <option value="10:00" disabled={!isTimeSlotAvailable('10:00')}>10:00 {!isTimeSlotAvailable('10:00') && '(Không khả dụng)'}</option>
-                                        <option value="10:30" disabled={!isTimeSlotAvailable('10:30')}>10:30 {!isTimeSlotAvailable('10:30') && '(Không khả dụng)'}</option>
-                                        <option value="11:00" disabled={!isTimeSlotAvailable('11:00')}>11:00 {!isTimeSlotAvailable('11:00') && '(Không khả dụng)'}</option>
-                                        <option value="11:30" disabled={!isTimeSlotAvailable('11:30')}>11:30 {!isTimeSlotAvailable('11:30') && '(Không khả dụng)'}</option>
-                                        <option value="12:00" disabled={!isTimeSlotAvailable('12:00')}>12:00 {!isTimeSlotAvailable('12:00') && '(Không khả dụng)'}</option>
-                                        <option value="12:30" disabled={!isTimeSlotAvailable('12:30')}>12:30 {!isTimeSlotAvailable('12:30') && '(Không khả dụng)'}</option>
-                                        <option value="13:00" disabled={!isTimeSlotAvailable('13:00')}>13:00 {!isTimeSlotAvailable('13:00') && '(Không khả dụng)'}</option>
-                                        <option value="13:30" disabled={!isTimeSlotAvailable('13:30')}>13:30 {!isTimeSlotAvailable('13:30') && '(Không khả dụng)'}</option>
-                                        <option value="14:00" disabled={!isTimeSlotAvailable('14:00')}>14:00 {!isTimeSlotAvailable('14:00') && '(Không khả dụng)'}</option>
-                                        <option value="14:30" disabled={!isTimeSlotAvailable('14:30')}>14:30 {!isTimeSlotAvailable('14:30') && '(Không khả dụng)'}</option>
-                                        <option value="15:00" disabled={!isTimeSlotAvailable('15:00')}>15:00 {!isTimeSlotAvailable('15:00') && '(Không khả dụng)'}</option>
-                                        <option value="15:30" disabled={!isTimeSlotAvailable('15:30')}>15:30 {!isTimeSlotAvailable('15:30') && '(Không khả dụng)'}</option>
-                                        <option value="16:00" disabled={!isTimeSlotAvailable('16:00')}>16:00 {!isTimeSlotAvailable('16:00') && '(Không khả dụng)'}</option>
-                                        <option value="16:30" disabled={!isTimeSlotAvailable('16:30')}>16:30 {!isTimeSlotAvailable('16:30') && '(Không khả dụng)'}</option>
-                                        <option value="17:00" disabled={!isTimeSlotAvailable('17:00')}>17:00 {!isTimeSlotAvailable('17:00') && '(Không khả dụng)'}</option>
-                                        <option value="17:30" disabled={!isTimeSlotAvailable('17:30')}>17:30 {!isTimeSlotAvailable('17:30') && '(Không khả dụng)'}</option>
-                                        <option value="18:00" disabled={!isTimeSlotAvailable('18:00')}>18:00 {!isTimeSlotAvailable('18:00') && '(Không khả dụng)'}</option>
-                                        <option value="18:30" disabled={!isTimeSlotAvailable('18:30')}>18:30 {!isTimeSlotAvailable('18:30') && '(Không khả dụng)'}</option>
-                                        <option value="19:00" disabled={!isTimeSlotAvailable('19:00')}>19:00 {!isTimeSlotAvailable('19:00') && '(Không khả dụng)'}</option>
-                                        <option value="19:30" disabled={!isTimeSlotAvailable('19:30')}>19:30 {!isTimeSlotAvailable('19:30') && '(Không khả dụng)'}</option>
-                                        <option value="20:00" disabled={!isTimeSlotAvailable('20:00')}>20:00 {!isTimeSlotAvailable('20:00') && '(Không khả dụng)'}</option>
+                                        {selectedRoute && getTimeSlots().map((time) => (
+                                            <option
+                                                key={time}
+                                                value={time}
+                                                disabled={!isTimeSlotAvailable(time)}
+                                            >
+                                                {time} {!isTimeSlotAvailable(time) && '(Không khả dụng)'}
+                                            </option>
+                                        ))}
                                     </select>
                                     {formData.date && (
                                         <p className="text-gray-500 text-xs mt-1">
                                             ⏰ Các khung giờ đã qua sẽ không thể đặt
+                                        </p>
+                                    )}
+                                    {!selectedRoute && (
+                                        <p className="text-orange-500 text-xs mt-1">
+                                            ℹ️ Vui lòng chọn tuyến đường trước
                                         </p>
                                     )}
                                 </div>
