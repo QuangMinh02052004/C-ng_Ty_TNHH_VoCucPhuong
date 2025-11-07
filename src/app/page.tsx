@@ -97,88 +97,95 @@ export default function Home() {
       <section className="py-16 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-3">
+            <h2 className="text-4xl font-bold text-blue-600 mb-3">
               Tuyến đường phổ biến
             </h2>
-            <p className="text-gray-600 text-lg">⭐ Được khách hàng tin tưởng lựa chọn</p>
+            <p className="text-gray-600 text-lg">Được khách hàng tin tưởng lựa chọn</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {routes.slice(0, 6).map((route, index) => (
               <div
                 key={route.id}
-                className="group relative bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 w-full max-w-sm mx-auto flex flex-col overflow-hidden border-2 border-transparent hover:border-blue-200"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className="relative bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 w-full max-w-sm mx-auto flex flex-col overflow-hidden border border-gray-200"
               >
-                {/* Hiệu ứng gradient background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
                 {/* Badge hot */}
                 {index < 3 && (
-                  <div className="absolute -top-2 -right-2 bg-gradient-to-r from-orange-400 to-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg animate-bounce z-10">
-                    🔥 HOT
+                  <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10">
+                    HOT
                   </div>
                 )}
 
                 <div className="relative p-6">
-                  <RouteArrow from={route.from} to={route.to} />
+                  {/* Điểm đi - Điểm đến đơn giản */}
+                  <div className="mb-6 space-y-3">
+                    <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <div>
+                        <p className="text-xs text-blue-600 font-medium">Điểm đi</p>
+                        <p className="text-sm font-bold text-gray-800">{route.from}</p>
+                      </div>
+                    </div>
 
-                  {/* Khung giờ hoạt động - Nổi bật phía trên */}
-                  <div className="mb-4 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 p-[2px] rounded-xl shadow-lg">
-                    <div className="bg-white rounded-xl p-4">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold flex items-center gap-2 text-gray-700">
-                          <span className="text-2xl">🕐</span>
-                          <span>Khung giờ hoạt động:</span>
-                        </span>
+                    {/* Đường nét đứt với mũi tên */}
+                    <div className="flex justify-center py-1">
+                      <div className="flex flex-col items-center">
+                        <div className="h-8 border-l-2 border-dashed border-blue-400"></div>
+                        <svg className="w-5 h-5 text-blue-500 -mt-1" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 3a1 1 0 011 1v10.586l2.293-2.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V4a1 1 0 011-1z" clipRule="evenodd" />
+                        </svg>
                       </div>
-                      <div className="mt-2 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 p-3 rounded-lg">
-                        <p className="text-center text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                          {getRouteTimeRange(route.id)}
-                        </p>
-                        <p className="text-center text-xs text-gray-600 mt-1">
-                          ⏰ Xe chạy mỗi 30 phút
-                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                      <div>
+                        <p className="text-xs text-blue-600 font-medium">Điểm đến</p>
+                        <p className="text-sm font-bold text-gray-800">{route.to}</p>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Khung giờ hoạt động - Đơn giản */}
+                  <div className="mb-4 bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-semibold text-gray-700 text-sm">
+                        🕐 Khung giờ hoạt động:
+                      </span>
+                    </div>
+                    <div className="bg-white p-3 rounded-lg border border-blue-100">
+                      <p className="text-center text-xl font-bold text-blue-600">
+                        {getRouteTimeRange(route.id)}
+                      </p>
+                      <p className="text-center text-xs text-gray-500 mt-1">
+                        Xe chạy mỗi 30 phút
+                      </p>
                     </div>
                   </div>
 
                   {/* Thông tin chi tiết */}
-                  <div className="space-y-3 text-gray-600 flex-grow bg-gray-50 rounded-xl p-4 border border-gray-100">
-                    <div className="flex items-center justify-between p-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                      <span className="font-semibold flex items-center gap-2">
-                        <span className="text-xl">💰</span> Giá vé:
-                      </span>
-                      <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <div className="space-y-2 mb-6">
+                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                      <span className="text-sm text-gray-600">Giá vé:</span>
+                      <span className="text-lg font-bold text-blue-600">
                         {route.price.toLocaleString('vi-VN')} đ
                       </span>
                     </div>
-                    <div className="flex items-center justify-between p-2 bg-white rounded-lg">
-                      <span className="font-semibold flex items-center gap-2">
-                        <span className="text-xl">⏱️</span> Thời gian:
-                      </span>
-                      <span className="font-bold text-gray-700">{route.duration}</span>
+                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                      <span className="text-sm text-gray-600">Thời gian:</span>
+                      <span className="font-semibold text-gray-800">{route.duration}</span>
                     </div>
-                    <div className="flex items-center justify-between p-2 bg-white rounded-lg">
-                      <span className="font-semibold flex items-center gap-2">
-                        <span className="text-xl">🚌</span> Loại xe:
-                      </span>
-                      <span className="font-bold text-gray-700">{route.busType}</span>
+                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                      <span className="text-sm text-gray-600">Loại xe:</span>
+                      <span className="font-semibold text-gray-800">{route.busType}</span>
                     </div>
                   </div>
 
-                  {/* Button đặt vé */}
+                  {/* Button đặt vé - Đơn giản */}
                   <Link
                     href={`/dat-ve?route=${route.id}`}
-                    className="mt-6 block w-full relative overflow-hidden group/button"
+                    className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center py-3 px-6 rounded-lg font-semibold transition-colors duration-200"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-[length:200%_100%] animate-shimmer"></div>
-                    <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-center py-3 px-6 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2">
-                      <span>🎫</span>
-                      <span>Đặt vé ngay</span>
-                      <svg className="w-5 h-5 group-hover/button:translate-x-1 transition-transform" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </div>
+                    Đặt vé ngay
                   </Link>
                 </div>
               </div>
