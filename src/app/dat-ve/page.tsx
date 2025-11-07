@@ -7,6 +7,7 @@ import { routes } from '@/data/routes';
 export default function DatVePage() {
     const searchParams = useSearchParams();
     const routeIdFromUrl = searchParams.get('route');
+    const timeFromUrl = searchParams.get('time');
 
     const [formData, setFormData] = useState({
         routeId: '',
@@ -20,16 +21,20 @@ export default function DatVePage() {
 
     const [selectedRoute, setSelectedRoute] = useState<typeof routes[0] | null>(null);
 
-    // Tự động điền tuyến đường khi có route trong URL
+    // Tự động điền tuyến đường và khung giờ khi có route và time trong URL
     useEffect(() => {
         if (routeIdFromUrl) {
             const route = routes.find(r => r.id === routeIdFromUrl);
             if (route) {
                 setSelectedRoute(route);
-                setFormData(prev => ({ ...prev, routeId: routeIdFromUrl }));
+                setFormData(prev => ({
+                    ...prev,
+                    routeId: routeIdFromUrl,
+                    departureTime: timeFromUrl || prev.departureTime
+                }));
             }
         }
-    }, [routeIdFromUrl]);
+    }, [routeIdFromUrl, timeFromUrl]);
 
     // Lấy danh sách khung giờ theo tuyến đường
     const getTimeSlots = () => {

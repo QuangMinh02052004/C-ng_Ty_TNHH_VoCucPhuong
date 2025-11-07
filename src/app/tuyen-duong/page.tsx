@@ -1,8 +1,20 @@
+'use client';
+
 import Link from 'next/link';
 import { routes } from '@/data/routes';
 import RouteArrow from '@/components/RouteArrow';
+import { useState } from 'react';
 
 export default function TuyenDuongPage() {
+    const [selectedTimes, setSelectedTimes] = useState<{ [key: string]: string }>({});
+
+    const handleTimeSelect = (routeId: string, time: string) => {
+        setSelectedTimes(prev => ({
+            ...prev,
+            [routeId]: prev[routeId] === time ? '' : time
+        }));
+    };
+
     return (
         <div className="py-16">
             <div className="container mx-auto px-4">
@@ -45,19 +57,23 @@ export default function TuyenDuongPage() {
                                     <p className="text-sm text-gray-600 mb-2">🕐 Giờ xuất bến:</p>
                                     <div className="flex flex-wrap gap-2">
                                         {route.departureTime.map((time, index) => (
-                                            <span
+                                            <button
                                                 key={index}
-                                                className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium"
+                                                onClick={() => handleTimeSelect(route.id, time)}
+                                                className={`px-3 py-1 rounded-full text-sm font-medium border transition-all ${selectedTimes[route.id] === time
+                                                        ? 'bg-blue-500 text-white border-blue-500'
+                                                        : 'bg-white text-blue-600 border-blue-200 hover:bg-blue-50'
+                                                    }`}
                                             >
                                                 {time}
-                                            </span>
+                                            </button>
                                         ))}
                                     </div>
                                 </div>
                             </div>
 
                             <Link
-                                href={`/dat-ve?route=${route.id}`}
+                                href={`/dat-ve?route=${route.id}${selectedTimes[route.id] ? `&time=${selectedTimes[route.id]}` : ''}`}
                                 className="mt-6 block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
                             >
                                 Đặt vé ngay
