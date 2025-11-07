@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Website Nhà Xe Võ Cúc Phương
 
-## Getting Started
+Website vận chuyển hành khách liên tỉnh được xây dựng với Next.js, TypeScript và Tailwind CSS.
 
-First, run the development server:
+## ✨ Tính năng chính
+
+- 🏠 **Trang chủ**: Hero section, ưu điểm nổi bật, tuyến đường phổ biến
+- 🚌 **Tuyến đường**: Danh sách đầy đủ các tuyến xe với giá vé, lịch trình
+- 🎫 **Đặt vé online**: Form đặt vé trực tuyến với đầy đủ thông tin
+- ℹ️ **Giới thiệu**: Thông tin về công ty, tầm nhìn, sứ mệnh
+- 📞 **Liên hệ**: Form liên hệ và thông tin chi tiết
+- 📱 **Responsive**: Tối ưu cho mọi thiết bị
+
+## 🛠️ Công nghệ sử dụng
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS 4
+- **Font**: Inter (hỗ trợ tiếng Việt)
+
+## 🚀 Hướng dẫn sử dụng
+
+### 1. Cài đặt dependencies (đã cài sẵn)
+
+```bash
+npm install
+```
+
+### 2. Chạy development server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Website sẽ chạy tại http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Build cho production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## 📂 Cấu trúc dự án
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── layout.tsx         # Layout chính với Header/Footer
+│   ├── page.tsx           # Trang chủ
+│   ├── tuyen-duong/       # Trang tuyến đường
+│   ├── dat-ve/            # Trang đặt vé
+│   ├── gioi-thieu/        # Trang giới thiệu
+│   └── lien-he/           # Trang liên hệ
+├── components/            # React components
+│   ├── Header.tsx         # Navigation bar
+│   └── Footer.tsx         # Footer
+├── data/                  # Dữ liệu
+│   └── routes.ts          # Danh sách tuyến đường
+└── types/                 # TypeScript types
+    └── index.ts           # Type definitions
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎨 Tùy chỉnh
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Cập nhật thông tin công ty
 
-## Deploy on Vercel
+Chỉnh sửa file `src/data/routes.ts`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Thêm/sửa tuyến đường
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Chỉnh sửa mảng `routes` trong `src/data/routes.ts`
+
+## 🔮 Phát triển tiếp theo
+
+- Backend & Database
+- Chọn ghế ngồi trực quan
+- Payment gateway
+- Admin dashboard
+- PWA support
+
+Copyright © 2024 Nhà Xe Võ Cúc Phương
