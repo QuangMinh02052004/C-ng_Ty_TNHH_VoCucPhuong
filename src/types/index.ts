@@ -7,6 +7,7 @@ export interface Route {
     departureTime: string[];
     availableSeats: number;
     busType: string;
+    distance: number;
 }
 
 export interface Booking {

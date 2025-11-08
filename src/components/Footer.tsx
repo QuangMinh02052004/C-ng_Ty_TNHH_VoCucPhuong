@@ -12,7 +12,7 @@ export default function Footer() {
                             Dịch vụ vận chuyển hành khách uy tín, an toàn và chuyên nghiệp.
                         </p>
                         <p className="text-gray-400">
-                            Phục vụ từ năm 2010
+                            Phục vụ từ năm 2011
                         </p>
                     </div>
 
@@ -50,7 +50,7 @@ export default function Footer() {
                             <li>📍 Văn phòng Quận 5: 97i đường Nguyễn Duy Dương, phường 9, quận 5</li>
                             <li>📍 Văn phòng Hàng Xanh: 496B đường Điện Biên Phủ, phường 21, quận Bình Thạnh</li>
 
-                            <li>📞 0123 456 789</li>
+                            <li>📞 02519 999 975</li>
                             <li>📧 contact@xevocucphuong.com</li>
                             <li>�� 24/7 hỗ trợ khách hàng</li>
                         </ul>
@@ -75,7 +75,7 @@ export default function Footer() {
 
                             {/* Zalo */}
                             <a
-                                href="https://zalo.me/0123456789"
+                                href="https://zalo.me/2438438727175449001"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-gray-400 hover:text-blue-400 transition"

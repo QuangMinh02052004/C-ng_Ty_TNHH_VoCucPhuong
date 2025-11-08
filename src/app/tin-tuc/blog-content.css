@@ -1,0 +1,189 @@
+/* Custom styles cho nội dung blog - Dễ đọc và bắt mắt hơn */
+
+.blog-content {
+  /* Typography cơ bản */
+  color: #1f2937;
+  line-height: 1.8;
+  font-size: 1.125rem; /* 18px */
+}
+
+/* Tiêu đề h2 - Lớn, in đậm, có khoảng cách */
+.blog-content h2 {
+  font-size: 1.875rem; /* 30px */
+  font-weight: 700;
+  color: #1e40af; /* Xanh đậm */
+  margin-top: 2.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 3px solid #3b82f6;
+  line-height: 1.3;
+}
+
+/* Tiêu đề h3 - Vừa, có background nhẹ */
+.blog-content h3 {
+  font-size: 1.5rem; /* 24px */
+  font-weight: 600;
+  color: #1e40af;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  padding-left: 1rem;
+  border-left: 4px solid #3b82f6;
+  line-height: 1.4;
+}
+
+/* Đoạn văn - Rộng rãi, dễ đọc */
+.blog-content p {
+  margin-bottom: 1.25rem;
+  color: #374151;
+  line-height: 1.8;
+}
+
+/* Danh sách - Có khoảng cách và icon đẹp */
+.blog-content ul {
+  margin: 1.5rem 0;
+  padding-left: 1.5rem;
+  list-style: none;
+}
+
+.blog-content ul li {
+  position: relative;
+  padding-left: 1.75rem;
+  margin-bottom: 0.75rem;
+  color: #374151;
+  line-height: 1.7;
+}
+
+/* Icon cho list items */
+.blog-content ul li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #3b82f6;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+/* Danh sách có số thứ tự */
+.blog-content ol {
+  margin: 1.5rem 0;
+  padding-left: 2rem;
+  counter-reset: item;
+  list-style: none;
+}
+
+.blog-content ol li {
+  position: relative;
+  padding-left: 1rem;
+  margin-bottom: 0.75rem;
+  color: #374151;
+  line-height: 1.7;
+  counter-increment: item;
+}
+
+.blog-content ol li::before {
+  content: counter(item) ".";
+  position: absolute;
+  left: -1.5rem;
+  color: #3b82f6;
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+/* Chữ in đậm - Màu xanh nổi bật */
+.blog-content strong {
+  font-weight: 700;
+  color: #1e40af;
+}
+
+/* Link - Xanh, gạch chân khi hover */
+.blog-content a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.blog-content a:hover {
+  color: #1d4ed8;
+  border-bottom-color: #3b82f6;
+}
+
+/* Blockquote - Trích dẫn đẹp */
+.blog-content blockquote {
+  margin: 2rem 0;
+  padding: 1.5rem 1.5rem 1.5rem 2rem;
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  border-radius: 0.5rem;
+  font-style: italic;
+  color: #1e40af;
+}
+
+/* Code - Khối code nổi bật */
+.blog-content code {
+  background: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.95rem;
+  color: #dc2626;
+}
+
+/* Bảng - Có viền và màu xen kẽ */
+.blog-content table {
+  width: 100%;
+  margin: 2rem 0;
+  border-collapse: collapse;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.blog-content table th {
+  background: #3b82f6;
+  color: white;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+}
+
+.blog-content table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.blog-content table tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.blog-content table tr:hover {
+  background: #eff6ff;
+}
+
+/* Responsive - Điện thoại */
+@media (max-width: 768px) {
+  .blog-content {
+    font-size: 1rem; /* 16px */
+  }
+
+  .blog-content h2 {
+    font-size: 1.5rem; /* 24px */
+    margin-top: 2rem;
+  }
+
+  .blog-content h3 {
+    font-size: 1.25rem; /* 20px */
+    margin-top: 1.5rem;
+  }
+
+  .blog-content ul,
+  .blog-content ol {
+    padding-left: 1.25rem;
+  }
+}
+
+/* Thêm hiệu ứng smooth cho toàn bộ nội dung */
+.blog-content * {
+  transition: color 0.2s ease;
+}

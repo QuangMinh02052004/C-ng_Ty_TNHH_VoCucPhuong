@@ -8,7 +8,6 @@ interface RouteArrowProps {
 export default function RouteArrow({ from, to }: RouteArrowProps) {
     return (
         <div className="relative mb-6">
-            {/* Điểm đi - Start Point */}
             <div className="flex items-center justify-between mb-3">
                 <div className="flex-1 relative group">
                     <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl blur opacity-25 group-hover:opacity-40 transition duration-500"></div>
@@ -23,8 +22,6 @@ export default function RouteArrow({ from, to }: RouteArrowProps) {
                                 <p className="text-sm font-bold text-blue-900">{from}</p>
                             </div>
                         </div>
-                        {/* Icon xe buýt */}
-                        <div className="absolute -right-2 top-1/2 -translate-y-1/2 text-2xl">🚌</div>
                     </div>
                 </div>
             </div>
@@ -51,10 +48,6 @@ export default function RouteArrow({ from, to }: RouteArrowProps) {
                         <div className="absolute inset-0 w-8 h-8 bg-green-400 rounded-full blur-md opacity-50 animate-pulse"></div>
                     </div>
 
-                    {/* Thời gian di chuyển */}
-                    <div className="absolute left-8 top-1/2 -translate-y-1/2 bg-white rounded-full px-3 py-1 shadow-md border-2 border-purple-200 whitespace-nowrap">
-                        <span className="text-xs font-semibold text-purple-600">⚡ Nhanh chóng</span>
-                    </div>
                 </div>
             </div>
 
@@ -73,15 +66,10 @@ export default function RouteArrow({ from, to }: RouteArrowProps) {
                                 <div className="absolute -inset-1 border-2 border-green-400 rounded-full animate-ping-slow"></div>
                             </div>
                         </div>
-                        {/* Icon cờ đích */}
-                        <div className="absolute -right-2 top-1/2 -translate-y-1/2 text-2xl">🏁</div>
                     </div>
                 </div>
             </div>
 
-            {/* Hiệu ứng trang trí */}
-            <div className="absolute -top-2 -right-2 text-yellow-400 text-xl animate-bounce">✨</div>
-            <div className="absolute -bottom-2 -left-2 text-blue-400 text-xl animate-bounce delay-300">💨</div>
         </div>
     );
 }

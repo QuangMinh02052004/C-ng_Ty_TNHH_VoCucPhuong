@@ -199,17 +199,17 @@ export default function DatVePage() {
     };
 
     return (
-        <div className="py-16 bg-gray-50">
+        <div className="py-16 bg-gradient-to-b from-sky-50 to-white">
             <div className="container mx-auto px-4">
                 <div className="max-w-3xl mx-auto">
                     <div className="text-center mb-8">
-                        <h1 className="text-4xl font-bold mb-4">Đặt vé trực tuyến</h1>
+                        <h1 className="text-3xl md:text-4xl font-bold mb-3 text-gray-800">Đặt vé trực tuyến</h1>
                         <p className="text-lg text-gray-600">
                             Điền thông tin dưới đây để đặt vé nhanh chóng
                         </p>
                     </div>
 
-                    <div className="bg-white rounded-lg shadow-md p-8">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Chọn tuyến đường */}
                             <div>
@@ -219,7 +219,7 @@ export default function DatVePage() {
                                 <select
                                     value={formData.routeId}
                                     onChange={(e) => handleRouteChange(e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                     required
                                 >
                                     <option value="">-- Chọn tuyến đường --</option>
@@ -233,19 +233,19 @@ export default function DatVePage() {
 
                             {/* Thông tin chi tiết tuyến */}
                             {selectedRoute && (
-                                <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6 rounded-xl border-2 border-blue-200">
-                                    <h3 className="font-bold text-lg mb-4 text-blue-800 flex items-center gap-2">
+                                <div className="bg-gradient-to-br from-sky-50 to-blue-50 p-6 rounded-xl border border-sky-200">
+                                    <h3 className="font-semibold text-lg mb-4 text-gray-800 flex items-center gap-2">
                                         <span className="text-2xl">ℹ️</span>
                                         Thông tin tuyến đường
                                     </h3>
                                     <div className="space-y-3">
                                         {/* Khung giờ hoạt động */}
-                                        <div className="bg-white p-4 rounded-lg border-2 border-blue-300 shadow-md">
+                                        <div className="bg-white p-4 rounded-lg border border-gray-200">
                                             <div className="flex items-center gap-2 mb-3">
                                                 <span className="text-2xl">🕐</span>
-                                                <span className="font-bold text-blue-800">Khung giờ hoạt động:</span>
+                                                <span className="font-medium text-gray-700">Khung giờ hoạt động:</span>
                                             </div>
-                                            <div className="bg-gradient-to-r from-blue-100 to-purple-100 p-3 rounded-lg">
+                                            <div className="bg-sky-50 p-3 rounded-lg border border-sky-100">
                                                 <p className="text-center text-lg font-bold text-gray-800">
                                                     {(() => {
                                                         const slots = getTimeSlots();
@@ -265,38 +265,38 @@ export default function DatVePage() {
                                         <div className="grid grid-cols-2 gap-3">
                                             <div className="bg-white p-3 rounded-lg border border-gray-200">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="font-semibold flex items-center gap-2">
+                                                    <span className="font-medium flex items-center gap-2 text-sm">
                                                         <span className="text-xl">⏱️</span>
                                                         Thời gian:
                                                     </span>
-                                                    <span className="font-bold text-gray-700">{selectedRoute.duration}</span>
+                                                    <span className="font-semibold text-gray-800">{selectedRoute.duration}</span>
                                                 </div>
                                             </div>
                                             <div className="bg-white p-3 rounded-lg border border-gray-200">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="font-semibold flex items-center gap-2">
+                                                    <span className="font-medium flex items-center gap-2 text-sm">
                                                         <span className="text-xl">🚌</span>
                                                         Loại xe:
                                                     </span>
-                                                    <span className="font-bold text-gray-700">{selectedRoute.busType}</span>
+                                                    <span className="font-semibold text-gray-800">{selectedRoute.busType}</span>
                                                 </div>
                                             </div>
                                             <div className="bg-white p-3 rounded-lg border border-gray-200">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="font-semibold flex items-center gap-2">
+                                                    <span className="font-medium flex items-center gap-2 text-sm">
                                                         <span className="text-xl">💺</span>
                                                         Ghế trống:
                                                     </span>
-                                                    <span className="font-bold text-green-600">{selectedRoute.availableSeats} chỗ</span>
+                                                    <span className="font-semibold text-green-600">{selectedRoute.availableSeats} chỗ</span>
                                                 </div>
                                             </div>
                                             <div className="bg-white p-3 rounded-lg border border-gray-200">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="font-semibold flex items-center gap-2">
+                                                    <span className="font-medium flex items-center gap-2 text-sm">
                                                         <span className="text-xl">💰</span>
                                                         Giá vé:
                                                     </span>
-                                                    <span className="font-bold text-blue-600">{selectedRoute.price.toLocaleString('vi-VN')} đ</span>
+                                                    <span className="font-semibold text-sky-600">{selectedRoute.price.toLocaleString('vi-VN')} đ</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -314,7 +314,7 @@ export default function DatVePage() {
                                         type="text"
                                         value={formData.customerName}
                                         onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                         placeholder="Nguyễn Văn A"
                                         required
                                     />
@@ -328,7 +328,7 @@ export default function DatVePage() {
                                         type="tel"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                         placeholder="0123456789"
                                         required
                                     />
@@ -343,7 +343,7 @@ export default function DatVePage() {
                                     type="email"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                     placeholder="example@email.com"
                                 />
                             </div>
@@ -358,7 +358,7 @@ export default function DatVePage() {
                                         type="date"
                                         value={formData.date}
                                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                         min={new Date().toISOString().split('T')[0]}
                                         required
                                     />
@@ -371,7 +371,7 @@ export default function DatVePage() {
                                     <select
                                         value={formData.departureTime}
                                         onChange={(e) => setFormData({ ...formData, departureTime: e.target.value })}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                         required
                                         disabled={!selectedRoute}
                                     >
@@ -420,7 +420,7 @@ export default function DatVePage() {
                                                 e.target.select();
                                             }
                                         }}
-                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                         min="0"
                                         max="10"
                                         required
@@ -442,16 +442,16 @@ export default function DatVePage() {
                                     type="text"
                                     value={selectedRoute ? `${(selectedRoute.price * formData.seats).toLocaleString('vi-VN')} đ` : '0 đ'}
                                     readOnly
-                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-green-600 font-bold text-xl cursor-not-allowed"
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50 text-sky-600 font-bold text-xl cursor-not-allowed"
                                 />
                             </div>
 
                             {/* Tổng tiền */}
                             {selectedRoute && formData.seats > 0 && (
-                                <div className="bg-green-50 p-4 rounded-lg">
+                                <div className="bg-sky-50 p-4 rounded-lg border border-sky-100">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-lg font-semibold">Tổng tiền:</span>
-                                        <span className="text-2xl font-bold text-green-600">
+                                        <span className="text-lg font-semibold text-gray-700">Tổng tiền:</span>
+                                        <span className="text-2xl font-bold text-sky-600">
                                             {(selectedRoute.price * formData.seats).toLocaleString('vi-VN')} đ
                                         </span>
                                     </div>
@@ -465,7 +465,7 @@ export default function DatVePage() {
                                     disabled={formData.seats === 0}
                                     className={`flex-1 py-3 rounded-lg font-semibold transition ${formData.seats === 0
                                         ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                                        : 'bg-sky-500 text-white hover:bg-sky-600'
                                         }`}
                                 >
                                     Đặt vé ngay
@@ -493,14 +493,13 @@ export default function DatVePage() {
                     </div>
 
                     {/* Thông tin hỗ trợ */}
-                    <div className="mt-8 bg-blue-50 rounded-lg p-6">
-                        <h3 className="font-semibold mb-3">📞 Cần hỗ trợ?</h3>
+                    <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                        <h3 className="font-semibold mb-3 text-gray-800">📞 Cần hỗ trợ?</h3>
                         <p className="text-gray-600 mb-2">
-                            Liên hệ hotline: <a href="tel:02519 999 975" className="text-blue-600 font-semibold">02519 999 975</a>
+                            Liên hệ hotline: <a href="tel:02519999975" className="text-sky-600 font-semibold hover:text-sky-700">02519 999 975</a>
                         </p>
                         <p className="text-gray-600">
-                            Email: <a href="mailto:
-vocucphuong0018@gmail.com" className="text-blue-600 font-semibold">
+                            Email: <a href="mailto:vocucphuong0018@gmail.com" className="text-sky-600 font-semibold hover:text-sky-700">
                                 vocucphuong0018@gmail.com</a>
                         </p>
                     </div>

@@ -6,14 +6,18 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getPostBySlug, posts } from '@/data/posts';
 import PostCard from '@/components/PostCard';
+import '../blog-content.css';
 
-export default function TinTucDetailPage({
+export default async function TinTucDetailPage({
     params,
 }: {
-    params: { slug: string };
+    params: Promise<{ slug: string }>;
 }) {
+    // Lấy params (Next.js 15 yêu cầu await)
+    const { slug } = await params;
+
     // Lấy bài viết theo slug
-    const post = getPostBySlug(params.slug);
+    const post = getPostBySlug(slug);
 
     // Nếu không tìm thấy bài viết
     if (!post) {
@@ -89,12 +93,8 @@ export default function TinTucDetailPage({
 
                     {/* Content */}
                     <div
-                        className="prose prose-lg max-w-none mb-8"
+                        className="prose prose-lg max-w-none mb-8 blog-content"
                         dangerouslySetInnerHTML={{ __html: post.content }}
-                        style={{
-                            color: '#374151',
-                            lineHeight: '1.8'
-                        }}
                     />
 
                     {/* Tags */}

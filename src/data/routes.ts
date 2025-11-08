@@ -89,7 +89,7 @@ export const companyInfo = {
     hotline: '02519 999 975',
     email: 'vocucphuong0018@gmail.com',
     address: ['Long Khánh: 18 đường Nguyễn Du, phường Xuân An, Thành phố Long Khánh', 'Quận 5: 97i đường Nguyễn Duy Dương, phường 9, quận 5', 'Hàng Xanh: 496B đường Điện Biên Phủ, phường 21, quận Bình Thạnh'],
-    founded: '2010',
+    founded: '2011',
     vision: 'Trở thành đơn vị vận tải hàng đầu tại Đồng Nai - Sài Gòn, mang đến trải nghiệm di chuyển an toàn, thoải mái và tiện lợi nhất cho khách hàng.',
     mission: 'Cung cấp dịch vụ vận chuyển khách chất lượng cao với đội xe hiện đại, đội ngũ lái xe chuyên nghiệp, và cam kết đúng giờ.',
     busTypes: ['Ghế ngồi 45 chỗ', 'Ghế ngồi 28 chỗ', 'Limousine 16 chỗ'],

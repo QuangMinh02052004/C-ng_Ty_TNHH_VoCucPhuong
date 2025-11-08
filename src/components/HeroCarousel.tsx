@@ -127,24 +127,24 @@ export default function HeroCarousel() {
             </section>
 
             {/* Content Section Below Image */}
-            <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12">
+            <section className="bg-gradient-to-b from-sky-50 to-white py-16">
                 <div className="container mx-auto px-4 text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4 animate-fade-in">
+                    <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 animate-fade-in">
                         {slides[currentSlide].title}
                     </h1>
-                    <p className="text-lg md:text-xl mb-8 max-w-3xl mx-auto animate-fade-in-delay">
+                    <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-3xl mx-auto animate-fade-in-delay">
                         {slides[currentSlide].description}
                     </p>
                     <div className="flex flex-wrap justify-center gap-4 animate-fade-in-delay-2">
                         <Link
                             href="/dat-ve"
-                            className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all hover:scale-105 shadow-lg"
+                            className="bg-sky-500 hover:bg-sky-600 text-white px-8 py-3 rounded-md font-semibold transition-all shadow-sm"
                         >
                             Đặt vé ngay
                         </Link>
                         <Link
                             href="/tuyen-duong"
-                            className="bg-transparent text-white px-8 py-3 rounded-lg font-semibold hover:bg-white/20 transition-all border-2 border-white"
+                            className="bg-white text-gray-700 hover:bg-gray-50 px-8 py-3 rounded-md font-semibold transition-all border border-gray-300"
                         >
                             Xem tuyến đường
                         </Link>
