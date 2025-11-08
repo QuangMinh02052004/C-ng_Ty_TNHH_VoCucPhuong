@@ -1,0 +1,233 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================================
+// USERS & AUTH
+// ==================================
+
+enum UserRole {
+  USER      // Khách hàng thường
+  STAFF     // Nhân viên
+  ADMIN     // Quản trị viên
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?   // Null nếu dùng OAuth
+  name          String
+  phone         String?
+  avatar        String?
+  role          UserRole  @default(USER)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  bookings      Booking[]
+  sessions      Session[]
+  accounts      Account[]
+
+  @@map("users")
+}
+
+// NextAuth Account model
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+// NextAuth Session model
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// ==================================
+// ROUTES & SCHEDULES
+// ==================================
+
+model Route {
+  id               String   @id @default(cuid())
+  from             String
+  to               String
+  price            Int      // Giá vé (VND)
+  duration         String   // Ví dụ: "2h 30p"
+  busType          String   // Ví dụ: "Limousine 16 chỗ"
+  distance         String?  // Khoảng cách (km)
+  description      String?  @db.Text
+
+  // Khung giờ hoạt động
+  operatingStart   String   // Ví dụ: "05:30"
+  operatingEnd     String   // Ví dụ: "20:00"
+  intervalMinutes  Int      @default(30) // Mỗi chuyến cách nhau bao nhiêu phút
+
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  schedules        Schedule[]
+  bookings         Booking[]
+
+  @@map("routes")
+}
+
+model Schedule {
+  id              String    @id @default(cuid())
+  routeId         String
+  busId           String
+  date            DateTime  // Ngày chạy
+  departureTime   String    // Giờ xuất bến (format: "HH:mm")
+  availableSeats  Int       // Số ghế còn trống
+  totalSeats      Int       // Tổng số ghế
+  status          String    @default("ACTIVE") // ACTIVE, CANCELLED, FULL
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  route           Route     @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  bus             Bus       @relation(fields: [busId], references: [id], onDelete: Cascade)
+  bookings        Booking[]
+
+  @@unique([routeId, busId, date, departureTime])
+  @@map("schedules")
+}
+
+model Bus {
+  id            String     @id @default(cuid())
+  licensePlate  String     @unique // Biển số xe
+  busType       String     // Loại xe
+  totalSeats    Int        // Tổng số ghế
+  status        String     @default("ACTIVE") // ACTIVE, MAINTENANCE, INACTIVE
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // Relations
+  schedules     Schedule[]
+
+  @@map("buses")
+}
+
+// ==================================
+// BOOKINGS & PAYMENTS
+// ==================================
+
+enum BookingStatus {
+  PENDING         // Chờ thanh toán
+  CONFIRMED       // Đã xác nhận
+  PAID            // Đã thanh toán
+  CANCELLED       // Đã hủy
+  COMPLETED       // Đã hoàn thành (đã đi xe)
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  bookingCode   String        @unique // Mã vé (tự động gen)
+
+  // Thông tin khách hàng
+  userId        String?       // Null nếu khách vãng lai
+  customerName  String
+  customerPhone String
+  customerEmail String?
+
+  // Thông tin chuyến đi
+  routeId       String
+  scheduleId    String?       // Null nếu chưa có schedule cụ thể
+  date          DateTime      // Ngày đi
+  departureTime String        // Giờ xuất bến
+
+  // Số lượng và giá
+  seats         Int           @default(1) // Số ghế đặt
+  totalPrice    Int           // Tổng tiền
+
+  // Trạng thái
+  status        BookingStatus @default(PENDING)
+
+  // QR Code và Ticket
+  qrCode        String?       // URL hoặc base64 của QR code
+  ticketUrl     String?       // URL của vé PDF
+
+  // Metadata
+  notes         String?       @db.Text
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  route         Route         @relation(fields: [routeId], references: [id], onDelete: Restrict)
+  schedule      Schedule?     @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  payment       Payment?
+
+  @@map("bookings")
+}
+
+enum PaymentStatus {
+  PENDING       // Chờ thanh toán
+  COMPLETED     // Đã thanh toán
+  FAILED        // Thanh toán thất bại
+  REFUNDED      // Đã hoàn tiền
+}
+
+enum PaymentMethod {
+  CASH          // Tiền mặt (trả tại bến)
+  BANK_TRANSFER // Chuyển khoản ngân hàng
+  QRCODE        // Quét mã QR
+  VNPAY         // VNPay (future)
+  MOMO          // MoMo (future)
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  bookingId       String        @unique
+
+  amount          Int           // Số tiền
+  method          PaymentMethod
+  status          PaymentStatus @default(PENDING)
+
+  // Thông tin giao dịch
+  transactionId   String?       // Mã giao dịch từ cổng thanh toán
+  paidAt          DateTime?     // Thời gian thanh toán
+
+  // Metadata
+  metadata        Json?         // Lưu thông tin bổ sung
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  booking         Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}

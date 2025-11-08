@@ -51,8 +51,7 @@ export default function Footer() {
                             <li>📍 Văn phòng Hàng Xanh: 496B đường Điện Biên Phủ, phường 21, quận Bình Thạnh</li>
 
                             <li>📞 02519 999 975</li>
-                            <li>📧 contact@xevocucphuong.com</li>
-                            <li>�� 24/7 hỗ trợ khách hàng</li>
+                            <li>📧 vocucphuong0018@gmail.com</li>
                         </ul>
                     </div>
 

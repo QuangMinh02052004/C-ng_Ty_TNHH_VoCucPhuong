@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { routes } from '@/data/routes';
 
 export default function DatVePage() {
     const searchParams = useSearchParams();
+    const router = useRouter();
+    const { data: session } = useSession();
     const routeIdFromUrl = searchParams.get('route');
     const timeFromUrl = searchParams.get('time');
 
@@ -20,6 +23,8 @@ export default function DatVePage() {
     });
 
     const [selectedRoute, setSelectedRoute] = useState<typeof routes[0] | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Tự động điền tuyến đường và khung giờ khi có route và time trong URL
     useEffect(() => {
@@ -159,43 +164,93 @@ export default function DatVePage() {
         return true;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
 
+        // Validate form
         if (!formData.routeId || !formData.customerName || !formData.phone || !formData.date || !formData.departureTime) {
-            alert('Vui lòng điền đầy đủ thông tin!');
+            setError('Vui lòng điền đầy đủ thông tin!');
             return;
         }
 
         if (formData.seats <= 0) {
-            alert('Vui lòng chọn ít nhất 1 ghế để đặt vé!');
+            setError('Vui lòng chọn ít nhất 1 ghế để đặt vé!');
             return;
         }
 
-        const totalPrice = selectedRoute ? selectedRoute.price * formData.seats : 0;
+        if (!selectedRoute) {
+            setError('Vui lòng chọn tuyến đường!');
+            return;
+        }
 
-        alert(`Đặt vé thành công!\n\nThông tin đặt vé:\n` +
-            `Tuyến: ${selectedRoute?.from} → ${selectedRoute?.to}\n` +
-            `Họ tên: ${formData.customerName}\n` +
-            `Số điện thoại: ${formData.phone}\n` +
-            `Ngày đi: ${formData.date}\n` +
-            `Giờ xuất bến: ${formData.departureTime}\n` +
-            `Số ghế: ${formData.seats}\n` +
-            `Tổng tiền: ${totalPrice.toLocaleString('vi-VN')} đ\n\n` +
-            `Chúng tôi sẽ liên hệ với bạn trong thời gian sớm nhất!`
-        );
+        // Start loading
+        setLoading(true);
 
-        // Reset form
-        setFormData({
-            routeId: '',
-            customerName: '',
-            phone: '',
-            email: '',
-            date: '',
-            departureTime: '',
-            seats: 1,
-        });
-        setSelectedRoute(null);
+        try {
+            const requestBody = {
+                routeId: formData.routeId,
+                customerName: formData.customerName,
+                customerPhone: formData.phone,
+                customerEmail: formData.email || undefined,
+                date: formData.date,
+                departureTime: formData.departureTime,
+                seats: formData.seats,
+                userId: session?.user?.id,
+            };
+
+            console.log('📤 Sending booking request:', requestBody);
+
+            // Call API to create booking
+            const response = await fetch('/api/bookings/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            const result = await response.json();
+
+            console.log('📥 API Response:', {
+                status: response.status,
+                ok: response.ok,
+                data: result
+            });
+
+            if (!response.ok || !result.success) {
+                console.error('❌ Booking failed:', result);
+                throw new Error(result.error || result.message || 'Đặt vé thất bại!');
+            }
+
+            // Save booking data to sessionStorage for success page
+            const bookingData = {
+                bookingCode: result.data.booking.bookingCode,
+                customerName: formData.customerName,
+                customerPhone: formData.phone,
+                customerEmail: formData.email,
+                route: `${selectedRoute.from} → ${selectedRoute.to}`,
+                routeFrom: selectedRoute.from,
+                routeTo: selectedRoute.to,
+                date: formData.date,
+                departureTime: formData.departureTime,
+                seats: formData.seats,
+                totalPrice: result.data.booking.totalPrice,
+                status: result.data.booking.status,
+                qrCodes: result.data.qrCodes,
+            };
+
+            sessionStorage.setItem('lastBooking', JSON.stringify(bookingData));
+
+            // Navigate to success page
+            router.push('/dat-ve/thanh-cong');
+
+        } catch (err: any) {
+            console.error('Booking error:', err);
+            setError(err.message || 'Có lỗi xảy ra khi đặt vé. Vui lòng thử lại!');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -210,6 +265,23 @@ export default function DatVePage() {
                     </div>
 
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                        {/* Error Message */}
+                        {error && (
+                            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                                <span className="text-2xl">❌</span>
+                                <div className="flex-1">
+                                    <h4 className="font-semibold text-red-800 mb-1">Có lỗi xảy ra</h4>
+                                    <p className="text-sm text-red-600">{error}</p>
+                                </div>
+                                <button
+                                    onClick={() => setError(null)}
+                                    className="text-red-400 hover:text-red-600"
+                                >
+                                    ✕
+                                </button>
+                            </div>
+                        )}
+
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Chọn tuyến đường */}
                             <div>
@@ -462,13 +534,21 @@ export default function DatVePage() {
                             <div className="flex gap-4">
                                 <button
                                     type="submit"
-                                    disabled={formData.seats === 0}
-                                    className={`flex-1 py-3 rounded-lg font-semibold transition ${formData.seats === 0
-                                        ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
-                                        : 'bg-sky-500 text-white hover:bg-sky-600'
-                                        }`}
+                                    disabled={formData.seats === 0 || loading}
+                                    className={`flex-1 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
+                                        formData.seats === 0 || loading
+                                            ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                                            : 'bg-sky-500 text-white hover:bg-sky-600'
+                                    }`}
                                 >
-                                    Đặt vé ngay
+                                    {loading ? (
+                                        <>
+                                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            <span>Đang xử lý...</span>
+                                        </>
+                                    ) : (
+                                        'Đặt vé ngay'
+                                    )}
                                 </button>
                                 <button
                                     type="button"

@@ -1,0 +1,29 @@
+# Start Prisma Postgres (local)
+npx prisma dev
+
+# Push schema lên database
+npx dotenv -e .env -- npx prisma db push
+
+# Generate Prisma Client
+npx prisma generate
+Bước 2: Start Development Server
+npm run dev
+Bước 3: Tạo Admin Account Đầu Tiên
+# Mở Prisma Studio
+npx prisma studio
+Vào http://localhost:5555 và tạo User với:
+Email: admin@example.com
+Password: Hash của admin123 (dùng bcrypt online tool hoặc script)
+Role: ADMIN
+Hoặc đăng ký qua /auth/register rồi update role thành ADMIN trong database.
+Bước 4: Test các tính năng
+Đăng ký: http://localhost:3000/auth/register
+Đăng nhập: http://localhost:3000/auth/login
+Profile: http://localhost:3000/profile
+Admin: http://localhost:3000/admin (cần role ADMIN)
+
+
+🔑 Tài khoản test:
+Admin: admin@vocucphuong.com / admin123456
+Staff: staff@vocucphuong.com / staff123456
+User: user@example.com / user123456
