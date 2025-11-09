@@ -118,7 +118,21 @@ export default function AdminDashboard() {
             </div>
 
             {/* Quick Actions */}
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <a
+                    href="/admin/payments"
+                    className="bg-green-50 border border-green-200 rounded-xl p-6 hover:bg-green-100 transition-colors"
+                >
+                    <div className="text-3xl mb-3">💳</div>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Thanh toán</h3>
+                    <p className="text-sm text-gray-600">Xác nhận thanh toán vé</p>
+                    {stats.pendingBookings > 0 && (
+                        <span className="inline-block mt-2 px-2 py-1 bg-yellow-500 text-white text-xs rounded-full">
+                            {stats.pendingBookings} chờ xử lý
+                        </span>
+                    )}
+                </a>
+
                 <a
                     href="/admin/bookings"
                     className="bg-sky-50 border border-sky-100 rounded-xl p-6 hover:bg-sky-100 transition-colors"

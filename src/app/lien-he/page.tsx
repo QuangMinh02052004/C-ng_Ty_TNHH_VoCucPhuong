@@ -11,25 +11,55 @@ export default function LienHePage() {
         subject: '',
         message: '',
     });
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError(null);
+        setSuccess(false);
 
         if (!formData.name || !formData.email || !formData.message) {
-            alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
+            setError('Vui lòng điền đầy đủ thông tin bắt buộc!');
             return;
         }
 
-        alert(`Cảm ơn bạn đã liên hệ!\n\nChúng tôi đã nhận được tin nhắn của bạn và sẽ phản hồi trong thời gian sớm nhất.\n\nThông tin liên hệ:\nHọ tên: ${formData.name}\nEmail: ${formData.email}\nSố điện thoại: ${formData.phone}\nTiêu đề: ${formData.subject}\n\nTrân trọng!`);
+        try {
+            setLoading(true);
 
-        // Reset form
-        setFormData({
-            name: '',
-            email: '',
-            phone: '',
-            subject: '',
-            message: '',
-        });
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                setSuccess(true);
+                // Reset form
+                setFormData({
+                    name: '',
+                    email: '',
+                    phone: '',
+                    subject: '',
+                    message: '',
+                });
+
+                // Scroll to top để thấy thông báo thành công
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                setError(result.message || 'Không thể gửi tin nhắn. Vui lòng thử lại sau.');
+            }
+        } catch (err) {
+            console.error('Error submitting contact form:', err);
+            setError('Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại sau hoặc liên hệ trực tiếp qua hotline.');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -41,6 +71,34 @@ export default function LienHePage() {
                         Chúng tôi luôn sẵn sàng hỗ trợ và lắng nghe ý kiến của bạn
                     </p>
                 </div>
+
+                {/* Success Message */}
+                {success && (
+                    <div className="mb-8 p-6 bg-green-50 border border-green-200 rounded-xl max-w-3xl mx-auto">
+                        <div className="flex items-start">
+                            <div className="text-4xl mr-4">✅</div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-green-800 mb-2">Gửi tin nhắn thành công!</h3>
+                                <p className="text-green-700">
+                                    Cảm ơn bạn đã liên hệ với chúng tôi. Chúng tôi đã nhận được tin nhắn của bạn và sẽ phản hồi trong thời gian sớm nhất.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Error Message */}
+                {error && (
+                    <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-xl max-w-3xl mx-auto">
+                        <div className="flex items-start">
+                            <div className="text-4xl mr-4">❌</div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-red-800 mb-2">Có lỗi xảy ra</h3>
+                                <p className="text-red-700">{error}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Form liên hệ */}
@@ -119,9 +177,24 @@ export default function LienHePage() {
 
                             <button
                                 type="submit"
-                                className="w-full bg-sky-500 text-white py-3 rounded-lg font-semibold hover:bg-sky-600 transition-colors"
+                                disabled={loading}
+                                className={`w-full py-3 rounded-lg font-semibold transition-colors ${
+                                    loading
+                                        ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                                        : 'bg-sky-500 text-white hover:bg-sky-600'
+                                }`}
                             >
-                                Gửi tin nhắn
+                                {loading ? (
+                                    <span className="flex items-center justify-center">
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Đang gửi...
+                                    </span>
+                                ) : (
+                                    'Gửi tin nhắn'
+                                )}
                             </button>
                         </form>
                     </div>

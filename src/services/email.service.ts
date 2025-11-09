@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+import { createTransport } from 'nodemailer';
 
 // ===========================================
 // EMAIL SERVICE - MODULE ĐỘC LẬP
@@ -15,7 +15,7 @@ interface SendEmailParams {
 
 // Tạo transporter
 const createTransporter = () => {
-    return nodemailer.createTransporter({
+    return createTransport({
         host: process.env.EMAIL_HOST || 'smtp.gmail.com',
         port: parseInt(process.env.EMAIL_PORT || '587'),
         secure: false, // true for 465, false for other ports
@@ -236,4 +236,119 @@ export async function sendBookingCancellationEmail({
     `;
 
     return sendEmail({ to, subject, html });
+}
+
+/**
+ * Gửi email liên hệ từ khách hàng (feedback)
+ */
+export async function sendContactEmail({
+    customerName,
+    customerEmail,
+    customerPhone,
+    subject,
+    message,
+}: {
+    customerName: string;
+    customerEmail: string;
+    customerPhone?: string;
+    subject?: string;
+    message: string;
+}) {
+    const emailSubject = subject
+        ? `[Liên hệ] ${subject}`
+        : `[Liên hệ] Tin nhắn từ ${customerName}`;
+
+    const html = `
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
+        .header { background-color: #0ea5e9; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background-color: white; padding: 30px; border-radius: 0 0 8px 8px; }
+        .customer-info { background-color: #f0f9ff; padding: 15px; border-left: 4px solid #0ea5e9; margin: 20px 0; }
+        .info-row { padding: 5px 0; }
+        .info-label { font-weight: bold; color: #6b7280; }
+        .info-value { color: #111827; }
+        .message-box { background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #6b7280; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📧 Tin nhắn liên hệ mới</h1>
+            <p>Từ website Xe Võ Cúc Phương</p>
+        </div>
+        <div class="content">
+            <h2>Thông tin khách hàng</h2>
+            <div class="customer-info">
+                <div class="info-row">
+                    <span class="info-label">👤 Họ tên:</span>
+                    <span class="info-value">${customerName}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">📧 Email:</span>
+                    <span class="info-value"><a href="mailto:${customerEmail}">${customerEmail}</a></span>
+                </div>
+                ${customerPhone ? `
+                <div class="info-row">
+                    <span class="info-label">📞 Số điện thoại:</span>
+                    <span class="info-value"><a href="tel:${customerPhone}">${customerPhone}</a></span>
+                </div>
+                ` : ''}
+                ${subject ? `
+                <div class="info-row">
+                    <span class="info-label">📋 Tiêu đề:</span>
+                    <span class="info-value">${subject}</span>
+                </div>
+                ` : ''}
+            </div>
+
+            <h3>Nội dung tin nhắn:</h3>
+            <div class="message-box">
+                ${message.replace(/\n/g, '<br>')}
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                <p style="color: #6b7280; font-size: 14px;">
+                    📅 Nhận lúc: ${new Date().toLocaleString('vi-VN')}
+                </p>
+            </div>
+        </div>
+        <div class="footer">
+            <p>Email này được gửi từ form liên hệ trên website.</p>
+            <p>&copy; 2024 Xe Võ Cúc Phương. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>
+    `;
+
+    const text = `
+📧 TIN NHẮN LIÊN HỆ MỚI
+
+Thông tin khách hàng:
+- Họ tên: ${customerName}
+- Email: ${customerEmail}
+${customerPhone ? `- Số điện thoại: ${customerPhone}` : ''}
+${subject ? `- Tiêu đề: ${subject}` : ''}
+
+Nội dung tin nhắn:
+${message}
+
+---
+Nhận lúc: ${new Date().toLocaleString('vi-VN')}
+    `;
+
+    // Gửi đến email admin/staff
+    return sendEmail({
+        to: 'lequangminh951@gmail.com',
+        subject: emailSubject,
+        html,
+        text
+    });
 }

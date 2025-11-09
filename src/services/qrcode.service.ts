@@ -22,29 +22,49 @@ interface GenerateTicketQRParams {
 }
 
 /**
- * Tạo QR code thanh toán (mô phỏng)
- * Trong thực tế sẽ tích hợp với VNPay, MoMo, etc.
+ * Tạo QR code thanh toán theo chuẩn VietQR
+ * QR code có thể quét bằng app ngân hàng để chuyển tiền
  */
 export async function generatePaymentQRCode({
     bookingCode,
     amount,
-    bankAccount = '0908724146',
-    bankName = 'MBBank',
 }: GeneratePaymentQRParams): Promise<string> {
     try {
-        // Tạo nội dung QR code theo chuẩn VietQR
-        // Format: bankAccount|bankName|amount|description
+        // Thông tin tài khoản nhận tiền (lấy từ env hoặc config)
+        const bankAccount = process.env.BANK_ACCOUNT_NO || '0908724146';
+        const accountName = process.env.BANK_ACCOUNT_NAME || 'CONG TY TNHH VO CUC PHUONG';
+        const bankCode = process.env.BANK_CODE || '970422'; // MBBank bin
+
+        // Tạo nội dung chuyển khoản
+        const description = `XEVCP ${bookingCode}`;
+
+        // Gọi VietQR API để tạo QR code
+        const vietQRUrl = `https://img.vietqr.io/image/${bankCode}-${bankAccount}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(description)}&accountName=${encodeURIComponent(accountName)}`;
+
+        // Fetch QR image và convert sang base64
+        try {
+            const response = await fetch(vietQRUrl);
+            if (response.ok) {
+                const buffer = await response.arrayBuffer();
+                const base64 = Buffer.from(buffer).toString('base64');
+                return `data:image/png;base64,${base64}`;
+            }
+        } catch (fetchError) {
+            console.warn('[QR] VietQR API không khả dụng, tạo QR code dự phòng:', fetchError);
+        }
+
+        // Fallback: tạo QR code chứa thông tin chuyển khoản
         const qrContent = {
             type: 'PAYMENT',
             bookingCode,
             amount,
             bankAccount,
-            bankName,
-            description: `Thanh toan ve xe ${bookingCode}`,
+            bankName: 'MBBank',
+            accountName,
+            description,
             timestamp: new Date().toISOString(),
         };
 
-        // Tạo QR code dạng Data URL (base64)
         const qrCodeDataURL = await QRCode.toDataURL(JSON.stringify(qrContent), {
             errorCorrectionLevel: 'M',
             type: 'image/png',
