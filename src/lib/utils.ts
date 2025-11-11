@@ -4,8 +4,9 @@
 
 /**
  * Generate unique booking code
- * Format: VCP-YYYYMMDD-XXXX
+ * Format: VCPYYYYMMDDXXXX (NO hyphens for bank transfer compatibility)
  * VCP = Võ Cúc Phương
+ * Example: VCP202511106100
  */
 export function generateBookingCode(): string {
     const now = new Date();
@@ -17,7 +18,7 @@ export function generateBookingCode(): string {
         .toString()
         .padStart(4, '0');
 
-    return `VCP-${year}${month}${day}-${random}`;
+    return `VCP${year}${month}${day}${random}`;
 }
 
 /**

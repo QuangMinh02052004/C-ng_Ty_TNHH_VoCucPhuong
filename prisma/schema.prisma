@@ -87,6 +87,17 @@ model Route {
   distance         String?  // Khoảng cách (km)
   description      String?  @db.Text
 
+  // Hình ảnh lộ trình
+  routeMapImage    String?  // URL hình ảnh bản đồ lộ trình
+  thumbnailImage   String?  // URL hình ảnh thumbnail
+  images           Json?    // Mảng các URL hình ảnh khác
+
+  // Thông tin địa lý
+  fromLat          Float?   // Vĩ độ điểm đi
+  fromLng          Float?   // Kinh độ điểm đi
+  toLat            Float?   // Vĩ độ điểm đến
+  toLng            Float?   // Kinh độ điểm đến
+
   // Khung giờ hoạt động
   operatingStart   String   // Ví dụ: "05:30"
   operatingEnd     String   // Ví dụ: "20:00"
@@ -179,6 +190,11 @@ model Booking {
   // QR Code và Ticket
   qrCode        String?       // URL hoặc base64 của QR code
   ticketUrl     String?       // URL của vé PDF
+
+  // Check-in
+  checkedIn     Boolean       @default(false) // Đã check-in chưa
+  checkedInAt   DateTime?     // Thời gian check-in
+  checkedInBy   String?       // User ID của admin/staff check-in
 
   // Metadata
   notes         String?       @db.Text

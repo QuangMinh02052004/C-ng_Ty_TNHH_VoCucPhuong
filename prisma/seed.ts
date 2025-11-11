@@ -30,7 +30,7 @@ async function main() {
             email: 'staff@vocucphuong.com',
             password: await hashPassword('staff123456'),
             name: 'Nhân viên',
-            phone: '0123456789',
+            phone: '02519999975',
             role: UserRole.STAFF,
         },
     });

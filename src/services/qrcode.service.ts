@@ -35,8 +35,8 @@ export async function generatePaymentQRCode({
         const accountName = process.env.BANK_ACCOUNT_NAME || 'CONG TY TNHH VO CUC PHUONG';
         const bankCode = process.env.BANK_CODE || '970422'; // MBBank bin
 
-        // Tạo nội dung chuyển khoản
-        const description = `XEVCP ${bookingCode}`;
+        // Tạo nội dung chuyển khoản - CHỈ CẦN MÃ VÉ
+        const description = bookingCode;
 
         // Gọi VietQR API để tạo QR code
         const vietQRUrl = `https://img.vietqr.io/image/${bankCode}-${bankAccount}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(description)}&accountName=${encodeURIComponent(accountName)}`;
@@ -84,7 +84,8 @@ export async function generatePaymentQRCode({
 }
 
 /**
- * Tạo QR code cho vé xe (để check-in)
+ * Tạo QR code cho vé xe (để check-in và xem thông tin)
+ * QR code chứa URL đến trang xem vé, khi quét sẽ mở trang web hiển thị đầy đủ thông tin
  */
 export async function generateTicketQRCode({
     bookingCode,
@@ -95,18 +96,13 @@ export async function generateTicketQRCode({
     seats,
 }: GenerateTicketQRParams): Promise<string> {
     try {
-        const qrContent = {
-            type: 'TICKET',
-            bookingCode,
-            customerName,
-            route,
-            date,
-            departureTime,
-            seats,
-            timestamp: new Date().toISOString(),
-        };
+        // Tạo URL đến trang xem vé công khai
+        // Khi quét QR code bằng camera, sẽ tự động mở trang web này
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        const ticketUrl = `${baseUrl}/ve/${bookingCode}`;
 
-        const qrCodeDataURL = await QRCode.toDataURL(JSON.stringify(qrContent), {
+        // Tạo QR code chứa URL
+        const qrCodeDataURL = await QRCode.toDataURL(ticketUrl, {
             errorCorrectionLevel: 'H',
             type: 'image/png',
             width: 300,

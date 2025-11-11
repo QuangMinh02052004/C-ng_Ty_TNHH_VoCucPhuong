@@ -29,6 +29,8 @@ export default function BookingSuccessPage() {
     const router = useRouter();
     const [bookingData, setBookingData] = useState<BookingData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [checkingPayment, setCheckingPayment] = useState(false);
+    const [paymentChecked, setPaymentChecked] = useState(false);
 
     useEffect(() => {
         // Lấy dữ liệu từ sessionStorage (đã được lưu khi đặt vé thành công)
@@ -45,6 +47,74 @@ export default function BookingSuccessPage() {
 
         setLoading(false);
     }, []);
+
+    // Auto-check payment status every 5 seconds
+    useEffect(() => {
+        if (!bookingData || bookingData.status === 'PAID') return;
+
+        const checkPaymentStatus = async () => {
+            try {
+                const response = await fetch(`/api/bookings/check-status?bookingCode=${bookingData.bookingCode}`);
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    if (data.status === 'PAID') {
+                        // Update booking data
+                        const updatedBooking = {
+                            ...bookingData,
+                            status: 'PAID'
+                        };
+                        setBookingData(updatedBooking);
+                        sessionStorage.setItem('lastBooking', JSON.stringify(updatedBooking));
+
+                        // Show success notification
+                        setPaymentChecked(true);
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking payment status:', error);
+            }
+        };
+
+        // Check immediately
+        checkPaymentStatus();
+
+        // Then check every 5 seconds
+        const interval = setInterval(checkPaymentStatus, 5000);
+
+        return () => clearInterval(interval);
+    }, [bookingData]);
+
+    const handleManualCheck = async () => {
+        if (!bookingData) return;
+
+        setCheckingPayment(true);
+        try {
+            const response = await fetch(`/api/bookings/check-status?bookingCode=${bookingData.bookingCode}`);
+
+            if (response.ok) {
+                const data = await response.json();
+
+                if (data.status === 'PAID') {
+                    const updatedBooking = {
+                        ...bookingData,
+                        status: 'PAID'
+                    };
+                    setBookingData(updatedBooking);
+                    sessionStorage.setItem('lastBooking', JSON.stringify(updatedBooking));
+                    setPaymentChecked(true);
+                } else {
+                    alert('Chưa nhận được thanh toán. Vui lòng thử lại sau!');
+                }
+            }
+        } catch (error) {
+            console.error('Error checking payment:', error);
+            alert('Lỗi khi kiểm tra thanh toán');
+        } finally {
+            setCheckingPayment(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -409,12 +479,30 @@ export default function BookingSuccessPage() {
                                 </p>
                             </div>
 
-                            {/* Payment QR */}
+                                    {/* Payment QR */}
                             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                                 <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                                     <span className="text-xl">💳</span>
                                     Mã QR thanh toán
                                 </h3>
+
+                                {/* Payment Status Badge */}
+                                {bookingData.status === 'PAID' ? (
+                                    <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                                        <p className="text-green-800 font-semibold flex items-center justify-center gap-2">
+                                            <span className="text-2xl">✅</span>
+                                            Đã thanh toán
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                        <p className="text-yellow-800 font-semibold flex items-center justify-center gap-2">
+                                            <span className="text-2xl">⏳</span>
+                                            Chờ thanh toán
+                                        </p>
+                                    </div>
+                                )}
+
                                 <div className="flex justify-center mb-4 bg-gray-50 p-6 rounded-lg">
                                     {bookingData.qrCodes.payment && (
                                         <Image
@@ -429,8 +517,47 @@ export default function BookingSuccessPage() {
                                 <p className="text-sm text-gray-600 text-center mb-2">
                                     Quét mã QR để thanh toán
                                 </p>
-                                <p className="text-xs text-gray-500 text-center">
+                                <p className="text-xs text-gray-500 text-center mb-4">
                                     (VNPay / MoMo / Chuyển khoản ngân hàng)
+                                </p>
+
+                                {/* Manual check button */}
+                                {bookingData.status !== 'PAID' && (
+                                    <button
+                                        onClick={handleManualCheck}
+                                        disabled={checkingPayment}
+                                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                    >
+                                        {checkingPayment ? 'Đang kiểm tra...' : '🔄 Kiểm tra thanh toán'}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Payment Status Info */}
+                    {bookingData.status !== 'PAID' && (
+                        <div className="bg-blue-50 rounded-xl border border-blue-200 p-6 mb-6 no-print">
+                            <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                                <span className="text-xl">💳</span>
+                                Thanh toán
+                            </h3>
+                            <div className="space-y-2 text-sm text-gray-700">
+                                <p className="flex items-start gap-2">
+                                    <span className="text-blue-600">•</span>
+                                    <span>Quét mã QR bên trên để thanh toán</span>
+                                </p>
+                                <p className="flex items-start gap-2">
+                                    <span className="text-blue-600">•</span>
+                                    <span><strong>Hệ thống tự động kiểm tra</strong> thanh toán mỗi 5 giây</span>
+                                </p>
+                                <p className="flex items-start gap-2">
+                                    <span className="text-blue-600">•</span>
+                                    <span>Sau khi chuyển tiền, bạn sẽ nhận được <strong>thông báo ngay lập tức</strong></span>
+                                </p>
+                                <p className="flex items-start gap-2">
+                                    <span className="text-blue-600">•</span>
+                                    <span>Hoặc nhấn nút <strong>"🔄 Kiểm tra thanh toán"</strong> để kiểm tra thủ công</span>
                                 </p>
                             </div>
                         </div>
@@ -497,8 +624,63 @@ export default function BookingSuccessPage() {
                             📧 Email: <a href="mailto:vocucphuong0018@gmail.com" className="text-sky-600 font-semibold hover:text-sky-700">vocucphuong0018@gmail.com</a>
                         </p>
                     </div>
+
+                    {/* Payment Success Notification */}
+                    {paymentChecked && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in">
+                            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 animate-scale-in">
+                                <div className="text-center">
+                                    <div className="inline-block p-4 bg-green-100 rounded-full mb-4">
+                                        <div className="text-6xl animate-bounce">🎉</div>
+                                    </div>
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                                        Thanh toán thành công!
+                                    </h2>
+                                    <p className="text-gray-600 mb-6">
+                                        Chúng tôi đã nhận được thanh toán của bạn. Vé xe đã được xác nhận!
+                                    </p>
+                                    <button
+                                        onClick={() => setPaymentChecked(false)}
+                                        className="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
+                                    >
+                                        Đóng
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            <style jsx>{`
+                @keyframes fade-in {
+                    from {
+                        opacity: 0;
+                    }
+                    to {
+                        opacity: 1;
+                    }
+                }
+
+                @keyframes scale-in {
+                    from {
+                        transform: scale(0.9);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: scale(1);
+                        opacity: 1;
+                    }
+                }
+
+                .animate-fade-in {
+                    animation: fade-in 0.3s ease-out;
+                }
+
+                .animate-scale-in {
+                    animation: scale-in 0.3s ease-out;
+                }
+            `}</style>
         </>
     );
 }

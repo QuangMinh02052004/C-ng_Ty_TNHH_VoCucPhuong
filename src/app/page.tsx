@@ -63,28 +63,24 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             <div className="text-center p-6 bg-sky-50 rounded-xl hover:bg-sky-100 transition-colors duration-300 border border-sky-100">
-              <div className="text-5xl mb-4">🚌</div>
               <h3 className="text-xl font-semibold mb-2 text-gray-800">Đội xe hiện đại</h3>
               <p className="text-gray-600 text-sm">
                 Xe đời mới, tiện nghi đầy đủ, bảo dưỡng định kỳ
               </p>
             </div>
             <div className="text-center p-6 bg-sky-50 rounded-xl hover:bg-sky-100 transition-colors duration-300 border border-sky-100">
-              <div className="text-5xl mb-4">⏰</div>
               <h3 className="text-xl font-semibold mb-2 text-gray-800">Đúng giờ</h3>
               <p className="text-gray-600 text-sm">
                 Cam kết xuất bến đúng giờ, tôn trọng thời gian của bạn
               </p>
             </div>
             <div className="text-center p-6 bg-sky-50 rounded-xl hover:bg-sky-100 transition-colors duration-300 border border-sky-100">
-              <div className="text-5xl mb-4">🛡️</div>
               <h3 className="text-xl font-semibold mb-2 text-gray-800">An toàn</h3>
               <p className="text-gray-600 text-sm">
                 Lái xe chuyên nghiệp, bảo hiểm đầy đủ cho hành khách
               </p>
             </div>
             <div className="text-center p-6 bg-sky-50 rounded-xl hover:bg-sky-100 transition-colors duration-300 border border-sky-100">
-              <div className="text-5xl mb-4">💰</div>
               <h3 className="text-xl font-semibold mb-2 text-gray-800">Giá cạnh tranh</h3>
               <p className="text-gray-600 text-sm">
                 Giá vé hợp lý, nhiều ưu đãi hấp dẫn
@@ -149,21 +145,18 @@ export default function Home() {
                   <div className="space-y-2.5 mb-5">
                     {/* Giá vé */}
                     <div className="flex items-center gap-2 bg-sky-50 rounded-lg p-3">
-                      <span className="text-xl">💰</span>
                       <span className="text-sky-700 font-medium text-sm">Giá vé</span>
                       <span className="ml-auto font-bold text-gray-900">{route.price.toLocaleString('vi-VN')} đ</span>
                     </div>
 
                     {/* Thời gian */}
                     <div className="flex items-center gap-2 bg-sky-50 rounded-lg p-3">
-                      <span className="text-xl">⏱️</span>
                       <span className="text-sky-700 font-medium text-sm">Thời gian</span>
                       <span className="ml-auto font-semibold text-gray-900">{route.duration}</span>
                     </div>
 
                     {/* Loại xe */}
                     <div className="flex items-center gap-2 bg-sky-50 rounded-lg p-3">
-                      <span className="text-xl">🚌</span>
                       <span className="text-sky-700 font-medium text-sm">Loại xe</span>
                       <span className="ml-auto font-semibold text-gray-900">{route.busType}</span>
                     </div>
@@ -187,7 +180,7 @@ export default function Home() {
                       </div>
                     </div>
                     <p className="text-center text-xs text-gray-600 mt-3">
-                      🔄 Chuyến mới mỗi 30 phút ({getRouteTimeSlots(route.id).length} chuyến/ngày)
+                      Chuyến mới mỗi 30 phút ({getRouteTimeSlots(route.id).length} chuyến/ngày)
                     </p>
                   </div>
 

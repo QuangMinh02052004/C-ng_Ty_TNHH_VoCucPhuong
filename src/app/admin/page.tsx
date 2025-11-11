@@ -67,99 +67,92 @@ export default function AdminDashboard() {
                 <>
                     {/* Stats Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="text-3xl">🎫</div>
-                        <span className="text-xs text-gray-500">Tổng số</span>
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="text-xs text-gray-500">Tổng số</span>
+                            </div>
+                            <h3 className="text-2xl font-bold text-gray-800 mb-1">{stats.totalBookings}</h3>
+                            <p className="text-sm text-gray-600">Vé đã đặt</p>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="text-xs text-gray-500">Chờ xử lý</span>
+                            </div>
+                            <h3 className="text-2xl font-bold text-yellow-600 mb-1">{stats.pendingBookings}</h3>
+                            <p className="text-sm text-gray-600">Vé chờ thanh toán</p>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="text-xs text-gray-500">Hoàn thành</span>
+                            </div>
+                            <h3 className="text-2xl font-bold text-green-600 mb-1">{stats.completedBookings}</h3>
+                            <p className="text-sm text-gray-600">Vé đã hoàn thành</p>
+                        </div>
+
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="text-xs text-gray-500">Doanh thu</span>
+                            </div>
+                            <h3 className="text-2xl font-bold text-sky-600 mb-1">
+                                {new Intl.NumberFormat('vi-VN').format(stats.totalRevenue)}
+
+                            </h3>
+                            <p className="text-sm text-gray-600">Tổng doanh thu</p>
+                        </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-1">{stats.totalBookings}</h3>
-                    <p className="text-sm text-gray-600">Vé đã đặt</p>
-                </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="text-3xl">⏳</div>
-                        <span className="text-xs text-gray-500">Chờ xử lý</span>
+                    {/* Recent Bookings */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <h2 className="text-xl font-bold text-gray-800 mb-4">Đặt vé gần đây</h2>
+
+                        <div className="text-center py-12 text-gray-500">
+                            <p>Chức năng đang được phát triển...</p>
+                            <p className="text-sm mt-2">Vui lòng quay lại sau</p>
+                        </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-yellow-600 mb-1">{stats.pendingBookings}</h3>
-                    <p className="text-sm text-gray-600">Vé chờ thanh toán</p>
-                </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="text-3xl">✅</div>
-                        <span className="text-xs text-gray-500">Hoàn thành</span>
+                    {/* Quick Actions */}
+                    <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <a
+                            href="/admin/payments"
+                            className="bg-green-50 border border-green-200 rounded-xl p-6 hover:bg-green-100 transition-colors"
+                        >
+                            <h3 className="text-lg font-semibold text-gray-800 mb-2">Thanh toán</h3>
+                            <p className="text-sm text-gray-600">Xác nhận thanh toán vé</p>
+                            {stats.pendingBookings > 0 && (
+                                <span className="inline-block mt-2 px-2 py-1 bg-yellow-500 text-white text-xs rounded-full">
+                                    {stats.pendingBookings} chờ xử lý
+                                </span>
+                            )}
+                        </a>
+
+                        <a
+                            href="/admin/bookings"
+                            className="bg-sky-50 border border-sky-100 rounded-xl p-6 hover:bg-sky-100 transition-colors"
+                        >
+                            <h3 className="text-lg font-semibold text-gray-800 mb-2">Quản lý vé</h3>
+                            <p className="text-sm text-gray-600">Xem và quản lý tất cả vé đặt</p>
+                        </a>
+
+                        <a
+                            href="/admin/routes"
+                            className="bg-sky-50 border border-sky-100 rounded-xl p-6 hover:bg-sky-100 transition-colors"
+                        >
+                            <h3 className="text-lg font-semibold text-gray-800 mb-2">Tuyến đường</h3>
+                            <p className="text-sm text-gray-600">Quản lý các tuyến xe</p>
+                        </a>
+
+                        <a
+                            href="/admin/users"
+                            className="bg-sky-50 border border-sky-100 rounded-xl p-6 hover:bg-sky-100 transition-colors"
+                        >
+                            <div className="text-3xl mb-3">👥</div>
+                            <h3 className="text-lg font-semibold text-gray-800 mb-2">Người dùng</h3>
+                            <p className="text-sm text-gray-600">Quản lý tài khoản người dùng</p>
+                        </a>
                     </div>
-                    <h3 className="text-2xl font-bold text-green-600 mb-1">{stats.completedBookings}</h3>
-                    <p className="text-sm text-gray-600">Vé đã hoàn thành</p>
-                </div>
-
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="text-3xl">💰</div>
-                        <span className="text-xs text-gray-500">Doanh thu</span>
-                    </div>
-                    <h3 className="text-2xl font-bold text-sky-600 mb-1">
-                        {(stats.totalRevenue / 1000000).toFixed(1)}M
-                    </h3>
-                    <p className="text-sm text-gray-600">Tổng doanh thu</p>
-                </div>
-            </div>
-
-            {/* Recent Bookings */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-4">Đặt vé gần đây</h2>
-
-                <div className="text-center py-12 text-gray-500">
-                    <div className="text-5xl mb-4">📋</div>
-                    <p>Chức năng đang được phát triển...</p>
-                    <p className="text-sm mt-2">Vui lòng quay lại sau</p>
-                </div>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <a
-                    href="/admin/payments"
-                    className="bg-green-50 border border-green-200 rounded-xl p-6 hover:bg-green-100 transition-colors"
-                >
-                    <div className="text-3xl mb-3">💳</div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Thanh toán</h3>
-                    <p className="text-sm text-gray-600">Xác nhận thanh toán vé</p>
-                    {stats.pendingBookings > 0 && (
-                        <span className="inline-block mt-2 px-2 py-1 bg-yellow-500 text-white text-xs rounded-full">
-                            {stats.pendingBookings} chờ xử lý
-                        </span>
-                    )}
-                </a>
-
-                <a
-                    href="/admin/bookings"
-                    className="bg-sky-50 border border-sky-100 rounded-xl p-6 hover:bg-sky-100 transition-colors"
-                >
-                    <div className="text-3xl mb-3">🎫</div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Quản lý vé</h3>
-                    <p className="text-sm text-gray-600">Xem và quản lý tất cả vé đặt</p>
-                </a>
-
-                <a
-                    href="/admin/routes"
-                    className="bg-sky-50 border border-sky-100 rounded-xl p-6 hover:bg-sky-100 transition-colors"
-                >
-                    <div className="text-3xl mb-3">🚌</div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Tuyến đường</h3>
-                    <p className="text-sm text-gray-600">Quản lý các tuyến xe</p>
-                </a>
-
-                <a
-                    href="/admin/users"
-                    className="bg-sky-50 border border-sky-100 rounded-xl p-6 hover:bg-sky-100 transition-colors"
-                >
-                    <div className="text-3xl mb-3">👥</div>
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Người dùng</h3>
-                    <p className="text-sm text-gray-600">Quản lý tài khoản người dùng</p>
-                </a>
-            </div>
                 </>
             )}
         </div>

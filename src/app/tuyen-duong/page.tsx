@@ -109,28 +109,24 @@ export default function TuyenDuongPage() {
                                 <div className="space-y-2.5 mb-5">
                                     {/* Giá vé */}
                                     <div className="flex items-center gap-2 bg-sky-50 rounded-lg p-3">
-                                        <span className="text-xl">💰</span>
                                         <span className="text-sky-700 font-medium text-sm">Giá vé</span>
                                         <span className="ml-auto font-bold text-gray-900">{route.price.toLocaleString('vi-VN')} đ</span>
                                     </div>
 
                                     {/* Thời gian */}
                                     <div className="flex items-center gap-2 bg-sky-50 rounded-lg p-3">
-                                        <span className="text-xl">⏱️</span>
                                         <span className="text-sky-700 font-medium text-sm">Thời gian</span>
                                         <span className="ml-auto font-semibold text-gray-900">{route.duration}</span>
                                     </div>
 
                                     {/* Loại xe */}
                                     <div className="flex items-center gap-2 bg-sky-50 rounded-lg p-3">
-                                        <span className="text-xl">🚌</span>
                                         <span className="text-sky-700 font-medium text-sm">Loại xe</span>
                                         <span className="ml-auto font-semibold text-gray-900">{route.busType}</span>
                                     </div>
 
                                     {/* Ghế trống */}
                                     <div className="flex items-center gap-2 bg-sky-50 rounded-lg p-3">
-                                        <span className="text-xl">💺</span>
                                         <span className="text-sky-700 font-medium text-sm">Ghế trống</span>
                                         <span className="ml-auto font-semibold text-green-600">{route.availableSeats} chỗ</span>
                                     </div>
@@ -154,7 +150,7 @@ export default function TuyenDuongPage() {
                                         ))}
                                     </div>
                                     <p className="text-center text-xs text-gray-600 mt-3">
-                                        🔄 Chuyến mới mỗi 30 phút ({getRouteTimeSlots(route.id).length} chuyến/ngày)
+                                        Chuyến mới mỗi 30 phút ({getRouteTimeSlots(route.id).length} chuyến/ngày)
                                     </p>
                                 </div>
 
