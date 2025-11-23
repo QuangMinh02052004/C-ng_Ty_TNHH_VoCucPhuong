@@ -1,0 +1,106 @@
+================================================================================
+                    CÁC CÂU LỆNH CHẠY PROJECT
+================================================================================
+
+📌 NẾU ĐÃ CÓ DATABASE, CASSO, WEBHOOK SẴN TỪ TRƯỚC
+(Clone project về máy mới hoặc setup lại)
+
+================================================================================
+1. CÀI ĐẶT & SETUP (Chỉ chạy 1 lần đầu)
+================================================================================
+
+# Bước 1: Cài dependencies
+npm install
+
+# Bước 2: Tạo file .env (copy từ backup)
+# Mở file ENV_CONFIG_BACKUP.txt -> Copy toàn bộ -> Tạo file .env -> Paste vào
+
+# Bước 3: Generate Prisma Client
+npx dotenv -e .env -- npx prisma generate
+
+# Bước 4: Pull schema từ database
+npx dotenv -e .env -- npx prisma db pull
+
+# Bước 5: Generate lại Prisma Client
+npx dotenv -e .env -- npx prisma generate
+
+
+================================================================================
+2. CHẠY PROJECT (Mỗi lần làm việc)
+================================================================================
+
+npm run dev
+
+→ Mở trình duyệt: http://localhost:3000
+
+
+================================================================================
+3. CẤU HÌNH CASSO WEBHOOK (Chỉ làm 1 lần)
+================================================================================
+
+# Bước 1: Chạy ngrok (Terminal mới)
+ngrok http 3000
+
+# Bước 2: Copy URL từ ngrok (ví dụ: https://abc123.ngrok-free.app)
+
+# Bước 3: Vào Casso.vn
+- Đăng nhập: https://casso.vn
+- Vào: Cài đặt → Webhook
+- Webhook URL: https://abc123.ngrok-free.app/api/webhook/casso
+- Secure token: 3lXYi6CY1N63XAzbDXjfF7YKqD70PZ4Fr0ZQGUNOgV6k592OtGALwT1vaKos5I9V
+- Chọn: ✅ Nhận tiền vào tài khoản
+- Nhấn: Lưu
+
+
+================================================================================
+4. CÁC LỆNH HỮU ÍCH
+================================================================================
+
+# Xem database với Prisma Studio
+npx dotenv -e .env -- npx prisma studio
+
+# Sync schema từ database
+npx dotenv -e .env -- npx prisma db pull
+npx dotenv -e .env -- npx prisma generate
+
+# Build production
+npm run build
+npm start
+
+
+================================================================================
+5. KIỂM TRA WEBHOOK
+================================================================================
+
+# Test webhook endpoint
+curl -X GET "http://localhost:3000/api/webhook/casso" \
+  -H "Authorization: Apikey 3lXYi6CY1N63XAzbDXjfF7YKqD70PZ4Fr0ZQGUNOgV6k592OtGALwT1vaKos5I9V"
+
+# Kết quả mong đợi:
+{"message":"Casso Webhook endpoint is working","authorized":true,...}
+
+
+================================================================================
+6. THÔNG TIN QUAN TRỌNG
+================================================================================
+
+📦 Database:     Đã có sẵn (Prisma PostgreSQL)
+💳 Casso:        API Key đã có trong .env
+🔗 Webhook URL:  Cần update khi deploy production
+📧 Email:        lequangminh951@gmail.com (App Password đã có)
+🏦 Ngân hàng:    LE QUANG MINH - 0908724146 (MBBank)
+
+
+================================================================================
+7. TÓM TẮT SIÊU NHANH (Đã setup rồi)
+================================================================================
+
+npm run dev
+
+→ Xong! Mở http://localhost:3000
+
+
+================================================================================
+                            HẾT
+================================================================================
+Liên hệ: vocucphuong0018@gmail.com | 02519999975

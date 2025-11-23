@@ -1,0 +1,129 @@
+# Quick Start - Xe Võ Cúc Phương
+
+## 🚀 Chạy Nhanh (5 phút)
+
+### Lần đầu tiên setup:
+```bash
+# 1. Cài đặt dependencies
+npm install
+
+# 2. Setup database
+npx dotenv -e .env -- npx prisma generate
+npx dotenv -e .env -- npx prisma db pull
+
+# 3. Chạy project
+npm run dev
+```
+
+### Lần sau (đã setup rồi):
+```bash
+npm run dev
+```
+
+Mở trình duyệt: **http://localhost:3000**
+
+---
+
+## 📋 Các Lệnh Thường Dùng
+
+### Development
+```bash
+# Chạy development server
+npm run dev
+
+# Build production
+npm run build
+
+# Chạy production
+npm start
+```
+
+### Database (Prisma)
+```bash
+# Xem database trong Prisma Studio
+npx dotenv -e .env -- npx prisma studio
+
+# Pull schema từ database
+npx dotenv -e .env -- npx prisma db pull
+
+# Generate Prisma Client
+npx dotenv -e .env -- npx prisma generate
+
+# Tạo migration mới
+npx dotenv -e .env -- npx prisma migrate dev --name ten_migration
+```
+
+---
+
+## 🔧 Setup Casso Webhook
+
+### 1. Chạy Ngrok (để test trên local)
+```bash
+ngrok http 3000
+```
+
+Copy URL từ ngrok (ví dụ: `https://abc123.ngrok-free.app`)
+
+### 2. Cấu hình trên Casso.vn
+
+- **Đăng nhập:** https://casso.vn
+- **Vào:** Cài đặt → Webhook
+- **Webhook URL:** `https://abc123.ngrok-free.app/api/webhook/casso`
+- **API Key:** `3lXYi6CY1N63XAzbDXjfF7YKqD70PZ4Fr0ZQGUNOgV6k592OtGALwT1vaKos5I9V`
+- **Sự kiện:** ✅ Nhận tiền vào tài khoản
+
+### 3. Test Webhook
+
+Chuyển khoản với nội dung:
+```
+NAP TIEN VE VCP123456
+```
+
+Webhook sẽ tự động cập nhật trạng thái thanh toán.
+
+---
+
+## 📞 Thông Tin Liên Hệ
+
+- **Email:** vocucphuong0018@gmail.com
+- **Hotline:** 02519999975
+- **Tài khoản NH:** LE QUANG MINH - 0908724146 (MBBank)
+
+---
+
+## 🆘 Gặp Lỗi?
+
+### Lỗi: "Missing required environment variable: DATABASE_URL"
+```bash
+# Kiểm tra file .env có tồn tại không
+ls -la .env
+
+# Nếu không có, copy từ backup
+cp ENV_CONFIG_BACKUP.txt .env
+```
+
+### Lỗi: Prisma không kết nối được database
+```bash
+# Kiểm tra DATABASE_URL trong .env
+cat .env | grep DATABASE_URL
+
+# Pull lại schema
+npx dotenv -e .env -- npx prisma db pull
+npx dotenv -e .env -- npx prisma generate
+```
+
+### Port 3000 đã được sử dụng
+```bash
+# Tìm process đang dùng port 3000
+lsof -ti:3000
+
+# Kill process
+kill -9 $(lsof -ti:3000)
+
+# Hoặc chạy trên port khác
+PORT=3001 npm run dev
+```
+
+---
+
+📚 **Xem hướng dẫn chi tiết:** [HUONG_DAN_CHAY_PROJECT.md](HUONG_DAN_CHAY_PROJECT.md)

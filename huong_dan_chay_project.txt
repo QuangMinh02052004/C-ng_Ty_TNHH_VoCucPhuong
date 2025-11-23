@@ -1,0 +1,446 @@
+# Hướng Dẫn Chạy Project Xe Võ Cúc Phương
+
+## Mục Lục
+- [1. Cài Đặt Dependencies](#1-cài-đặt-dependencies)
+- [2. Cấu Hình Database với Prisma](#2-cấu-hình-database-với-prisma)
+- [3. Cấu Hình Casso Webhook](#3-cấu-hình-casso-webhook)
+- [4. Chạy Dự Án](#4-chạy-dự-án)
+- [5. Các Lệnh Hữu Ích](#5-các-lệnh-hữu-ích)
+
+---
+
+## 1. Cài Đặt Dependencies
+
+### Bước 1.1: Cài đặt Node.js packages
+```bash
+npm install
+```
+
+---
+
+## 2. Cấu Hình Database với Prisma
+
+### Bước 2.1: Tạo file `.env`
+Tạo file `.env` trong thư mục gốc của project và thêm các biến môi trường:
+
+```bash
+# ==================================
+# DATABASE
+# ==================================
+DATABASE_URL="postgres://e260aa1dc7ec523d063ad4793798704a28518eac3afe44661640d7d7659315ce:sk_Q8NoTIdR6Powx9IjYDVAL@db.prisma.io:5432/postgres?sslmode=require"
+
+# ==================================
+# NEXTAUTH
+# ==================================
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-super-secret-key-change-this-in-production"
+
+# ==================================
+# EMAIL SERVICE (Nodemailer với Gmail)
+# ==================================
+EMAIL_HOST="smtp.gmail.com"
+EMAIL_PORT="587"
+EMAIL_USER="vocucphuong0018@gmail.com"
+EMAIL_PASSWORD="your-gmail-app-password"
+EMAIL_FROM="Xe Võ Cúc Phương <vocucphuong0018@gmail.com>"
+
+# ==================================
+# APP CONFIG
+# ==================================
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+NEXT_PUBLIC_COMPANY_NAME="Xe Võ Cúc Phương"
+NEXT_PUBLIC_COMPANY_PHONE="02519999975"
+NEXT_PUBLIC_COMPANY_EMAIL="vocucphuong0018@gmail.com"
+
+# ==================================
+# BANK ACCOUNT (for VietQR)
+# ==================================
+BANK_ACCOUNT_NO="your-bank-account-number"
+BANK_ACCOUNT_NAME="YOUR BANK ACCOUNT NAME"
+BANK_CODE="970422"
+
+# ==================================
+# CASSO WEBHOOK
+# ==================================
+CASSO_API_KEY="3lXYi6CY1N63XAzbDXjfF7YKqD70PZ4Fr0ZQGUNOgV6k592OtGALwT1vaKos5I9V"
+CASSO_WEBHOOK_URL="https://d6e3cb57a6fd.ngrok-free.app/webhook/casso"
+```
+
+### Bước 2.2: Generate Prisma Client
+```bash
+npx dotenv -e .env -- npx prisma generate
+```
+
+### Bước 2.3: Pull Database Schema (nếu database đã tồn tại)
+```bash
+npx dotenv -e .env -- npx prisma db pull
+```
+
+**HOẶC** Chạy Migration để tạo Database Schema mới:
+```bash
+npx dotenv -e .env -- npx prisma migrate dev --name init
+```
+
+Lệnh này sẽ:
+- Tạo các bảng trong database theo schema đã định nghĩa
+- Tạo migration history
+- Generate Prisma Client mới
+
+### Bước 2.4: (Tùy chọn) Seed dữ liệu mẫu
+```bash
+npx dotenv -e .env -- npx prisma db seed
+```
+
+### Bước 2.5: Xem Database với Prisma Studio
+```bash
+npx dotenv -e .env -- npx prisma studio
+```
+Truy cập: http://localhost:5555 để xem và quản lý database trực quan.
+
+---
+
+## 3. Cấu Hình Casso Webhook
+
+### Bước 3.1: Tạo API Route cho Webhook
+
+Tạo file `src/app/api/webhook/casso/route.ts`:
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+// Verify Casso webhook signature
+function verifyCassoSignature(body: any, apiKey: string): boolean {
+  // Implement signature verification logic here
+  // Casso sẽ gửi kèm signature để verify request
+  return true; // Placeholder
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+
+    // Verify webhook từ Casso
+    const apiKey = process.env.CASSO_API_KEY;
+    if (!apiKey || !verifyCassoSignature(body, apiKey)) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    // Log webhook data
+    console.log('Casso Webhook received:', JSON.stringify(body, null, 2));
+
+    // Parse thông tin giao dịch từ Casso
+    const {
+      id,              // Transaction ID từ Casso
+      amount,          // Số tiền
+      description,     // Nội dung chuyển khoản
+      when,            // Thời gian giao dịch
+      bank_sub_acc_id  // ID tài khoản ngân hàng
+    } = body.data || body;
+
+    // Tìm booking code trong description
+    // Ví dụ: "NAP TIEN VE VCP123456"
+    const bookingCodeMatch = description?.match(/VCP[A-Z0-9]+/i);
+
+    if (!bookingCodeMatch) {
+      console.log('Không tìm thấy mã booking trong nội dung CK');
+      return NextResponse.json({
+        success: false,
+        message: 'Không tìm thấy mã booking'
+      });
+    }
+
+    const bookingCode = bookingCodeMatch[0].toUpperCase();
+    console.log('Tìm thấy booking code:', bookingCode);
+
+    // Tìm booking trong database
+    const booking = await prisma.booking.findUnique({
+      where: { bookingCode },
+      include: { payment: true }
+    });
+
+    if (!booking) {
+      console.log('Không tìm thấy booking:', bookingCode);
+      return NextResponse.json({
+        success: false,
+        message: 'Không tìm thấy booking'
+      });
+    }
+
+    // Kiểm tra số tiền có khớp không
+    if (Math.abs(booking.totalPrice - amount) > 1000) {
+      console.log('Số tiền không khớp:', { expected: booking.totalPrice, received: amount });
+      return NextResponse.json({
+        success: false,
+        message: 'Số tiền không khớp'
+      });
+    }
+
+    // Cập nhật trạng thái payment
+    if (booking.payment) {
+      await prisma.payment.update({
+        where: { id: booking.payment.id },
+        data: {
+          status: 'COMPLETED',
+          transactionId: String(id),
+          paidAt: new Date(when),
+          metadata: body
+        }
+      });
+    } else {
+      // Tạo payment mới nếu chưa có
+      await prisma.payment.create({
+        data: {
+          bookingId: booking.id,
+          amount: amount,
+          method: 'BANK_TRANSFER',
+          status: 'COMPLETED',
+          transactionId: String(id),
+          paidAt: new Date(when),
+          metadata: body
+        }
+      });
+    }
+
+    // Cập nhật trạng thái booking
+    await prisma.booking.update({
+      where: { id: booking.id },
+      data: {
+        status: 'PAID'
+      }
+    });
+
+    console.log('✅ Đã cập nhật thanh toán thành công cho booking:', bookingCode);
+
+    // TODO: Gửi email xác nhận đã thanh toán
+    // TODO: Gửi SMS xác nhận đã thanh toán
+
+    return NextResponse.json({
+      success: true,
+      message: 'Payment updated successfully',
+      bookingCode
+    });
+
+  } catch (error) {
+    console.error('Lỗi xử lý Casso webhook:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// Allow GET for testing
+export async function GET() {
+  return NextResponse.json({
+    message: 'Casso Webhook endpoint is working',
+    timestamp: new Date().toISOString()
+  });
+}
+```
+
+### Bước 3.2: Cài đặt Ngrok (để test webhook trên local)
+
+```bash
+# Cài đặt ngrok
+brew install ngrok  # macOS
+# hoặc tải tại: https://ngrok.com/download
+
+# Chạy ngrok để expose local server
+ngrok http 3000
+```
+
+Ngrok sẽ cung cấp URL dạng: `https://abc123.ngrok-free.app`
+
+### Bước 3.3: Cấu hình Webhook trên Casso
+
+1. Đăng nhập vào [Casso.vn](https://casso.vn)
+2. Vào **Cài đặt** → **Webhook**
+3. Thêm webhook URL: `https://abc123.ngrok-free.app/api/webhook/casso`
+4. Nhập API Key: `3lXYi6CY1N63XAzbDXjfF7YKqD70PZ4Fr0ZQGUNOgV6k592OtGALwT1vaKos5I9V`
+5. Chọn các sự kiện cần nhận:
+   - ✅ Nhận tiền vào tài khoản
+6. Lưu cấu hình
+
+### Bước 3.4: Test Webhook
+
+Test bằng cách chuyển khoản với nội dung có mã booking:
+```
+NAP TIEN VE VCP123456
+```
+
+Kiểm tra logs:
+```bash
+# Xem logs của Next.js server
+# Payment sẽ tự động được cập nhật khi có giao dịch
+```
+
+---
+
+## 4. Chạy Dự Án
+
+### Development Mode
+```bash
+npm run dev
+```
+Website chạy tại: http://localhost:3000
+
+### Production Mode
+```bash
+# Build project
+npm run build
+
+# Start production server
+npm start
+```
+
+---
+
+## 5. Các Lệnh Hữu Ích
+
+### Prisma Commands
+
+**Lưu ý:** Tất cả lệnh Prisma cần dùng `npx dotenv -e .env --` để load biến môi trường.
+
+```bash
+# Generate Prisma Client (sau khi thay đổi schema)
+npx dotenv -e .env -- npx prisma generate
+
+# Pull schema từ database (sync với DB hiện tại)
+npx dotenv -e .env -- npx prisma db pull
+
+# Tạo migration mới
+npx dotenv -e .env -- npx prisma migrate dev --name ten_migration
+
+# Deploy migrations lên production
+npx dotenv -e .env -- npx prisma migrate deploy
+
+# Reset database (XÓA TẤT CẢ DỮ LIỆU!)
+npx dotenv -e .env -- npx prisma migrate reset
+
+# Mở Prisma Studio
+npx dotenv -e .env -- npx prisma studio
+
+# Format schema file
+npx dotenv -e .env -- npx prisma format
+
+# Validate schema
+npx dotenv -e .env -- npx prisma validate
+
+# Seed database
+npx dotenv -e .env -- npx prisma db seed
+```
+
+### Development Commands
+
+```bash
+# Chạy dev server
+npm run dev
+
+# Build project
+npm run build
+
+# Start production server
+npm start
+
+# Run linter
+npm run lint
+
+# Check TypeScript errors
+npx tsc --noEmit
+```
+
+### Git Commands
+
+```bash
+# Xem status
+git status
+
+# Add files
+git add .
+
+# Commit
+git commit -m "Your message"
+
+# Push
+git push
+```
+
+---
+
+## 6. Kiểm Tra Hệ Thống
+
+### Test Database Connection
+```bash
+npx prisma db pull
+```
+
+### Test API Endpoints
+```bash
+# Test webhook endpoint
+curl http://localhost:3000/api/webhook/casso
+
+# Test booking API
+curl http://localhost:3000/api/bookings/check-status
+```
+
+### Kiểm tra Logs
+- Development: Xem console của terminal đang chạy `npm run dev`
+- Production: Xem logs của hosting service (Vercel, Railway, etc.)
+
+---
+
+## 7. Troubleshooting
+
+### Lỗi Database Connection
+```bash
+# Kiểm tra DATABASE_URL trong .env
+# Chạy lại generate và migrate
+npx prisma generate
+npx prisma migrate dev
+```
+
+### Lỗi Webhook không nhận được
+- Kiểm tra ngrok đang chạy: `curl https://your-ngrok-url.ngrok-free.app/api/webhook/casso`
+- Kiểm tra API Key Casso đúng chưa
+- Xem logs của Next.js server để debug
+
+### Lỗi Build
+```bash
+# Clear cache và rebuild
+rm -rf .next
+rm -rf node_modules
+npm install
+npm run build
+```
+
+---
+
+## 8. Deploy Production
+
+### Deploy lên Vercel (Recommended)
+
+1. Push code lên GitHub
+2. Import project vào [Vercel](https://vercel.com)
+3. Add Environment Variables (copy từ .env)
+4. Deploy
+
+### Cập nhật Webhook URL sau khi deploy
+- URL mới: `https://your-domain.vercel.app/api/webhook/casso`
+- Cập nhật lại webhook URL trên Casso.vn
+
+---
+
+## Liên Hệ & Hỗ Trợ
+
+- Email: vocucphuong0018@gmail.com
+- Phone: 02519999975
+
+---
+
+**Chúc bạn chạy project thành công!** 🚀
