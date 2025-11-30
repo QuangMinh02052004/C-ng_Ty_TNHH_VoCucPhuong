@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { RouteRepository } from '@/lib/repositories/route-repository'
 
 // PATCH: Cập nhật route
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions)
 
     // Kiểm tra xác thực
@@ -47,10 +48,14 @@ export async function PATCH(
     if (data.isActive !== undefined) updateData.isActive = data.isActive
 
     // Cập nhật route
-    const route = await prisma.route.update({
-      where: { id: params.id },
-      data: updateData
-    })
+    const route = await RouteRepository.update(id, updateData);
+
+    if (!route) {
+      return NextResponse.json(
+        { error: 'Route not found' },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({ route })
   } catch (error) {
@@ -65,9 +70,10 @@ export async function PATCH(
 // DELETE: Xóa route
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions)
 
     // Kiểm tra xác thực
@@ -87,17 +93,7 @@ export async function DELETE(
     }
 
     // Kiểm tra xem route có bookings không
-    const routeWithBookings = await prisma.route.findUnique({
-      where: { id: params.id },
-      include: {
-        _count: {
-          select: {
-            bookings: true,
-            schedules: true
-          }
-        }
-      }
-    })
+    const routeWithBookings = await RouteRepository.findByIdWithCounts(id);
 
     if (!routeWithBookings) {
       return NextResponse.json(
@@ -113,17 +109,8 @@ export async function DELETE(
       )
     }
 
-    // Xóa schedules trước
-    if (routeWithBookings._count.schedules > 0) {
-      await prisma.schedule.deleteMany({
-        where: { routeId: params.id }
-      })
-    }
-
-    // Xóa route
-    await prisma.route.delete({
-      where: { id: params.id }
-    })
+    // Xóa route (hard delete sẽ xóa cả schedules nếu có CASCADE trong database)
+    await RouteRepository.hardDelete(id);
 
     return NextResponse.json({ message: 'Route deleted successfully' })
   } catch (error) {

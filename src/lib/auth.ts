@@ -1,7 +1,6 @@
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaAdapter } from '@next-auth/prisma-adapter';
-import prisma from '@/lib/prisma';
+import { UserRepository } from '@/lib/repositories/user-repository';
 import { comparePassword } from '@/lib/utils';
 
 // ===========================================
@@ -9,7 +8,8 @@ import { comparePassword } from '@/lib/utils';
 // ===========================================
 
 export const authOptions: NextAuthOptions = {
-    adapter: PrismaAdapter(prisma),
+    // Không cần adapter khi dùng JWT strategy
+    // adapter: PrismaAdapter(prisma),
 
     providers: [
         CredentialsProvider({
@@ -24,9 +24,7 @@ export const authOptions: NextAuthOptions = {
                 }
 
                 // Tìm user trong database
-                const user = await prisma.user.findUnique({
-                    where: { email: credentials.email },
-                });
+                const user = await UserRepository.findByEmail(credentials.email);
 
                 if (!user || !user.password) {
                     throw new Error('Email hoặc mật khẩu không đúng');
@@ -48,8 +46,8 @@ export const authOptions: NextAuthOptions = {
                     email: user.email,
                     name: user.name,
                     role: user.role,
-                    phone: user.phone,
-                    avatar: user.avatar,
+                    phone: user.phone || undefined,
+                    avatar: user.avatar || undefined,
                 };
             },
         }),

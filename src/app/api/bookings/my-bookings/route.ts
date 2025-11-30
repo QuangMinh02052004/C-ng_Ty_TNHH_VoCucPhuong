@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { BookingRepository } from '@/lib/repositories/booking-repository';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,23 +15,9 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch user's bookings
-    const bookings = await prisma.booking.findMany({
-      where: {
-        userId: session.user.id,
-      },
-      include: {
-        route: {
-          select: {
-            from: true,
-            to: true,
-            busType: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+    // Fetch user's bookings with route details
+    const bookings = await BookingRepository.findAllWithDetails({
+      userId: session.user.id,
     });
 
     return NextResponse.json(

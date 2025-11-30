@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
+import { BookingRepository } from '@/lib/repositories/booking-repository';
 import { z } from 'zod';
 
 const checkinSchema = z.object({
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     if (!validation.success) {
       return NextResponse.json(
-        { error: validation.error.errors[0].message },
+        { error: validation.error.issues[0].message },
         { status: 400 }
       );
     }
@@ -41,20 +41,7 @@ export async function POST(request: NextRequest) {
     const { bookingCode } = validation.data;
 
     // Tìm booking theo mã vé
-    const booking = await prisma.booking.findUnique({
-      where: { bookingCode },
-      include: {
-        route: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-          },
-        },
-      },
-    });
+    const booking = await BookingRepository.findByCodeWithRouteAndUser(bookingCode);
 
     if (!booking) {
       return NextResponse.json(
@@ -102,43 +89,35 @@ export async function POST(request: NextRequest) {
     }
 
     // Thực hiện check-in
-    const updatedBooking = await prisma.booking.update({
-      where: { id: booking.id },
-      data: {
-        checkedIn: true,
-        checkedInAt: new Date(),
-        checkedInBy: session.user.id,
-      },
-      include: {
-        route: true,
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-          },
-        },
-      },
-    });
+    const updatedBooking = await BookingRepository.checkIn(booking.id, session.user.id);
+
+    if (!updatedBooking) {
+      return NextResponse.json(
+        { error: 'Lỗi khi check-in vé' },
+        { status: 500 }
+      );
+    }
+
+    // Lấy lại thông tin booking với route
+    const bookingWithDetails = await BookingRepository.findByCodeWithRouteAndUser(bookingCode);
 
     return NextResponse.json(
       {
         success: true,
         message: 'Check-in thành công!',
         booking: {
-          bookingCode: updatedBooking.bookingCode,
-          customerName: updatedBooking.customerName,
-          customerPhone: updatedBooking.customerPhone,
-          customerEmail: updatedBooking.customerEmail,
-          route: `${updatedBooking.route.from} → ${updatedBooking.route.to}`,
-          date: updatedBooking.date,
-          departureTime: updatedBooking.departureTime,
-          seats: updatedBooking.seats,
-          totalPrice: updatedBooking.totalPrice,
-          status: updatedBooking.status,
-          checkedIn: updatedBooking.checkedIn,
-          checkedInAt: updatedBooking.checkedInAt,
+          bookingCode: bookingWithDetails?.bookingCode || updatedBooking.bookingCode,
+          customerName: bookingWithDetails?.customerName || updatedBooking.customerName,
+          customerPhone: bookingWithDetails?.customerPhone || updatedBooking.customerPhone,
+          customerEmail: bookingWithDetails?.customerEmail || updatedBooking.customerEmail,
+          route: bookingWithDetails?.route ? `${bookingWithDetails.route.from} → ${bookingWithDetails.route.to}` : '',
+          date: bookingWithDetails?.date || updatedBooking.date,
+          departureTime: bookingWithDetails?.departureTime || updatedBooking.departureTime,
+          seats: bookingWithDetails?.seats || updatedBooking.seats,
+          totalPrice: bookingWithDetails?.totalPrice || updatedBooking.totalPrice,
+          status: bookingWithDetails?.status || updatedBooking.status,
+          checkedIn: bookingWithDetails?.checkedIn || updatedBooking.checkedIn,
+          checkedInAt: bookingWithDetails?.checkedInAt || updatedBooking.checkedInAt,
         },
       },
       { status: 200 }

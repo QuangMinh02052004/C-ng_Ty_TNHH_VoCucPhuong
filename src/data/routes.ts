@@ -9,7 +9,8 @@ export const routes: Route[] = [
         duration: '1.5 giờ',
         departureTime: ['05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'],
         availableSeats: 28,
-        busType: 'Ghế ngồi'
+        busType: 'Ghế ngồi',
+        distance: 80
     },
     {
         id: '2',
@@ -19,7 +20,8 @@ export const routes: Route[] = [
         duration: '2 giờ',
         departureTime: ['05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'],
         availableSeats: 28,
-        busType: 'Ghế ngồi'
+        busType: 'Ghế ngồi',
+        distance: 80
     },
     {
         id: '3',
@@ -29,7 +31,8 @@ export const routes: Route[] = [
         duration: '1.5 giờ',
         departureTime: ['05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'],
         availableSeats: 28,
-        busType: 'Ghế ngồi'
+        busType: 'Ghế ngồi',
+        distance: 80
     },
     {
         id: '4',
@@ -39,7 +42,8 @@ export const routes: Route[] = [
         duration: ' ~ 2 giờ 30 phút',
         departureTime: ['05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00'],
         availableSeats: 28,
-        busType: 'Ghế ngồi'
+        busType: 'Ghế ngồi',
+        distance: 80
     },
     {
         id: '5',
@@ -49,7 +53,8 @@ export const routes: Route[] = [
         duration: ' 2 giờ ~ 4 giờ ',
         departureTime: ['05:30', '07:00', '08:30', '10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00'],
         availableSeats: 28,
-        busType: 'Ghế ngồi'
+        busType: 'Ghế ngồi',
+        distance: 80
     },
     {
         id: '6',
@@ -59,7 +64,8 @@ export const routes: Route[] = [
         duration: '1.5 giờ ~ 4 tiếng',
         departureTime: ['05:30', '07:00', '08:30', '10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00'],
         availableSeats: 28,
-        busType: 'Ghế ngồi'
+        busType: 'Ghế ngồi',
+        distance: 80
     },
     {
         id: '7',
@@ -69,7 +75,8 @@ export const routes: Route[] = [
         duration: '1 giờ',
         departureTime: ['05:30', '07:00', '08:30', '10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00'],
         availableSeats: 28,
-        busType: 'Ghế ngồi'
+        busType: 'Ghế ngồi',
+        distance: 80
     },
     {
         id: '8',
@@ -79,7 +86,8 @@ export const routes: Route[] = [
         duration: '1.5 giờ',
         departureTime: ['05:30', '07:00', '08:30', '10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00'],
         availableSeats: 28,
-        busType: 'Ghế ngồi'
+        busType: 'Ghế ngồi',
+        distance: 80
     }
 ];
 

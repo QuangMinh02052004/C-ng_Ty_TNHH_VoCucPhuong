@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { UserRepository } from '@/lib/repositories/user-repository'
 
 // GET: Lấy danh sách tất cả users
 export async function GET(request: NextRequest) {
@@ -25,25 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Lấy danh sách users với số lượng bookings
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        phone: true,
-        role: true,
-        emailVerified: true,
-        createdAt: true,
-        _count: {
-          select: {
-            bookings: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+    const users = await UserRepository.findAllWithBookingCount();
 
     return NextResponse.json({ users })
   } catch (error) {

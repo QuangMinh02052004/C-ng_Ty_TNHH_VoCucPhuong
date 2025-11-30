@@ -1,50 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { BookingRepository } from '@/lib/repositories/booking-repository'
 
 // GET: Lấy thông tin vé công khai (không cần auth)
 // API này dùng để hiển thị thông tin vé khi quét QR code
 export async function GET(
   request: NextRequest,
-  { params }: { params: { bookingCode: string } }
+  { params }: { params: Promise<{ bookingCode: string }> }
 ) {
   try {
-    const { bookingCode } = params
+    const { bookingCode } = await params
 
     // Lấy thông tin booking với tất cả relations
-    const booking = await prisma.booking.findUnique({
-      where: { bookingCode },
-      include: {
-        route: {
-          select: {
-            from: true,
-            to: true,
-            duration: true,
-            busType: true,
-            distance: true,
-            price: true
-          }
-        },
-        schedule: {
-          select: {
-            date: true,
-            departureTime: true,
-            bus: {
-              select: {
-                licensePlate: true,
-                busType: true
-              }
-            }
-          }
-        },
-        payment: {
-          select: {
-            method: true,
-            status: true,
-            paidAt: true
-          }
-        }
-      }
-    })
+    const booking = await BookingRepository.findByCodeWithFullDetails(bookingCode)
 
     if (!booking) {
       return NextResponse.json(
@@ -62,13 +29,13 @@ export async function GET(
         customerEmail: booking.customerEmail,
 
         // Thông tin chuyến đi
-        route: {
+        route: booking.route ? {
           from: booking.route.from,
           to: booking.route.to,
           duration: booking.route.duration,
           busType: booking.route.busType,
           distance: booking.route.distance
-        },
+        } : null,
 
         date: booking.date,
         departureTime: booking.departureTime,

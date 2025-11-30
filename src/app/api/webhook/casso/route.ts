@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { BookingRepository, PaymentRepository } from '@/lib/repositories/booking-repository';
 
 // Verify Casso webhook signature
 function verifyCassoSignature(request: NextRequest): boolean {
@@ -73,10 +71,7 @@ export async function POST(request: NextRequest) {
       console.log('🎫 Tìm thấy booking code:', bookingCode);
 
       // Tìm booking trong database
-      const booking = await prisma.booking.findUnique({
-        where: { bookingCode },
-        include: { payment: true, route: true }
-      });
+      const booking = await BookingRepository.findByCodeWithDetails(bookingCode);
 
       if (!booking) {
         console.log('❌ Không tìm thấy booking:', bookingCode);
@@ -110,37 +105,27 @@ export async function POST(request: NextRequest) {
       // Cập nhật hoặc tạo payment
       if (booking.payment) {
         console.log('📝 Cập nhật payment hiện tại');
-        await prisma.payment.update({
-          where: { id: booking.payment.id },
-          data: {
-            status: 'COMPLETED',
-            transactionId: tid || String(id),
-            paidAt: new Date(when),
-            metadata: transaction as any
-          }
+        await PaymentRepository.update(booking.payment.id, {
+          status: 'COMPLETED',
+          transactionId: tid || String(id),
+          paidAt: new Date(when),
+          metadata: JSON.stringify(transaction)
         });
       } else {
         console.log('📝 Tạo payment mới');
-        await prisma.payment.create({
-          data: {
-            bookingId: booking.id,
-            amount: amount,
-            method: 'BANK_TRANSFER',
-            status: 'COMPLETED',
-            transactionId: tid || String(id),
-            paidAt: new Date(when),
-            metadata: transaction as any
-          }
+        await PaymentRepository.create({
+          bookingId: booking.id,
+          amount: amount,
+          method: 'BANK_TRANSFER',
+          status: 'COMPLETED',
+          transactionId: tid || String(id),
+          paidAt: new Date(when),
+          metadata: JSON.stringify(transaction)
         });
       }
 
       // Cập nhật trạng thái booking thành PAID
-      await prisma.booking.update({
-        where: { id: booking.id },
-        data: {
-          status: 'PAID'
-        }
-      });
+      await BookingRepository.updateStatus(booking.id, 'PAID');
 
       console.log('✅ Đã cập nhật thanh toán thành công cho booking:', bookingCode);
 
@@ -180,9 +165,6 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     );
-  } finally {
-    // Disconnect Prisma client
-    await prisma.$disconnect();
   }
 }
 

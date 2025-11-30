@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { BookingRepository } from '@/lib/repositories/booking-repository';
 
 // ===========================================
 // API: LẤY DANH SÁCH VÉ CHỜ THANH TOÁN
@@ -21,25 +21,8 @@ export async function GET(request: NextRequest) {
         }
 
         // 2. Lấy danh sách booking chờ thanh toán
-        const pendingBookings = await prisma.booking.findMany({
-            where: {
-                status: 'PENDING',
-            },
-            include: {
-                route: true,
-                payment: true,
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        phone: true,
-                    },
-                },
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
+        const pendingBookings = await BookingRepository.findAllWithDetails({
+            status: 'PENDING',
         });
 
         // 3. Format data
@@ -49,10 +32,10 @@ export async function GET(request: NextRequest) {
             customerName: booking.customerName,
             customerPhone: booking.customerPhone,
             customerEmail: booking.customerEmail,
-            route: {
+            route: booking.route ? {
                 from: booking.route.from,
                 to: booking.route.to,
-            },
+            } : null,
             date: booking.date,
             departureTime: booking.departureTime,
             seats: booking.seats,
@@ -60,7 +43,7 @@ export async function GET(request: NextRequest) {
             status: booking.status,
             createdAt: booking.createdAt,
             qrCode: booking.qrCode,
-            payment: booking.payment || null,
+            payment: null, // Will need to fetch separately if needed
         }));
 
         return NextResponse.json({

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { BookingRepository } from '@/lib/repositories/booking-repository';
 
 // ===========================================
 // API: LẤY THỐNG KÊ CHO ADMIN DASHBOARD
@@ -34,46 +34,23 @@ export async function GET(request: NextRequest) {
             pendingBookings,
             paidBookings,
             completedBookings,
+            totalRevenue,
         ] = await Promise.all([
             // Tổng số vé đã đặt
-            prisma.booking.count(),
+            BookingRepository.count(),
 
             // Vé chờ thanh toán (PENDING)
-            prisma.booking.count({
-                where: {
-                    status: 'PENDING',
-                },
-            }),
+            BookingRepository.count('PENDING'),
 
             // Vé đã thanh toán (PAID)
-            prisma.booking.count({
-                where: {
-                    status: 'PAID',
-                },
-            }),
+            BookingRepository.count('PAID'),
 
             // Vé đã hoàn thành (COMPLETED)
-            prisma.booking.count({
-                where: {
-                    status: 'COMPLETED',
-                },
-            }),
+            BookingRepository.count('COMPLETED'),
+
+            // Tổng doanh thu (chỉ tính vé đã thanh toán hoặc hoàn thành)
+            BookingRepository.totalRevenue(['PAID', 'COMPLETED']),
         ]);
-
-        // Tính tổng doanh thu (chỉ tính vé đã thanh toán hoặc hoàn thành)
-        const revenueResult = await prisma.booking.aggregate({
-            where: {
-                OR: [
-                    { status: 'PAID' },
-                    { status: 'COMPLETED' },
-                ],
-            },
-            _sum: {
-                totalPrice: true,
-            },
-        });
-
-        const totalRevenue = revenueResult._sum.totalPrice || 0;
 
         return NextResponse.json({
             success: true,

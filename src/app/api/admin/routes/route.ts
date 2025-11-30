@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { RouteRepository } from '@/lib/repositories/route-repository'
 
 // GET: Lấy danh sách tất cả routes
 export async function GET(request: NextRequest) {
@@ -25,19 +25,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Lấy danh sách routes với số lượng bookings và schedules
-    const routes = await prisma.route.findMany({
-      include: {
-        _count: {
-          select: {
-            bookings: true,
-            schedules: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
-    })
+    const routes = await RouteRepository.findAllWithCounts();
 
     return NextResponse.json({ routes })
   } catch (error) {
@@ -81,23 +69,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Tạo route mới
-    const route = await prisma.route.create({
-      data: {
-        from: data.from,
-        to: data.to,
-        price: data.price,
-        duration: data.duration,
-        busType: data.busType,
-        distance: data.distance || null,
-        description: data.description || null,
-        routeMapImage: data.routeMapImage || null,
-        thumbnailImage: data.thumbnailImage || null,
-        operatingStart: data.operatingStart,
-        operatingEnd: data.operatingEnd,
-        intervalMinutes: data.intervalMinutes || 30,
-        isActive: data.isActive !== undefined ? data.isActive : true
-      }
-    })
+    const route = await RouteRepository.create({
+      from: data.from,
+      to: data.to,
+      price: data.price,
+      duration: data.duration,
+      busType: data.busType,
+      distance: data.distance || null,
+      description: data.description || null,
+      routeMapImage: data.routeMapImage || null,
+      thumbnailImage: data.thumbnailImage || null,
+      images: null,
+      fromLat: null,
+      fromLng: null,
+      toLat: null,
+      toLng: null,
+      operatingStart: data.operatingStart,
+      operatingEnd: data.operatingEnd,
+      intervalMinutes: data.intervalMinutes || 30,
+      isActive: data.isActive !== undefined ? data.isActive : true
+    });
 
     return NextResponse.json({ route }, { status: 201 })
   } catch (error) {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import prisma from '@/lib/prisma';
+import { UserRepository } from '@/lib/repositories/user-repository';
 import { hashPassword, isValidEmail, isValidPhone } from '@/lib/utils';
 
 // ===========================================
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
                 {
                     success: false,
                     error: 'Validation failed',
-                    details: validation.error.errors,
+                    details: validation.error.issues,
                 },
                 { status: 400 }
             );
@@ -52,9 +52,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if email already exists
-        const existingUser = await prisma.user.findUnique({
-            where: { email },
-        });
+        const existingUser = await UserRepository.findByEmail(email);
 
         if (existingUser) {
             return NextResponse.json(
@@ -67,29 +65,28 @@ export async function POST(request: NextRequest) {
         const hashedPassword = await hashPassword(password);
 
         // Create user
-        const user = await prisma.user.create({
-            data: {
-                email,
-                password: hashedPassword,
-                name,
-                phone: phone || null,
-                role: 'USER', // Default role
-            },
-            select: {
-                id: true,
-                email: true,
-                name: true,
-                phone: true,
-                role: true,
-                createdAt: true,
-            },
+        const user = await UserRepository.create({
+            email,
+            password: hashedPassword,
+            name,
+            phone,
+            role: 'USER', // Default role
         });
 
         return NextResponse.json(
             {
                 success: true,
                 message: 'Đăng ký thành công',
-                data: { user },
+                data: {
+                    user: {
+                        id: user.id,
+                        email: user.email,
+                        name: user.name,
+                        phone: user.phone,
+                        role: user.role,
+                        createdAt: user.createdAt,
+                    },
+                },
             },
             { status: 201 }
         );

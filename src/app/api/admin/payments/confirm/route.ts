@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { BookingRepository, PaymentRepository } from '@/lib/repositories/booking-repository';
 import { z } from 'zod';
 
 // ===========================================
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
                 {
                     success: false,
                     error: 'Validation failed',
-                    details: validation.error.errors,
+                    details: validation.error.issues,
                 },
                 { status: 400 }
             );
@@ -46,13 +46,7 @@ export async function POST(request: NextRequest) {
         const { bookingId, method, transactionId, notes } = validation.data;
 
         // 3. Tìm booking
-        const booking = await prisma.booking.findUnique({
-            where: { id: bookingId },
-            include: {
-                payment: true,
-                route: true,
-            },
-        });
+        const booking = await BookingRepository.findById(bookingId);
 
         if (!booking) {
             return NextResponse.json(
@@ -70,38 +64,30 @@ export async function POST(request: NextRequest) {
         }
 
         // 5. Cập nhật trạng thái booking
-        const updatedBooking = await prisma.booking.update({
-            where: { id: bookingId },
-            data: {
-                status: 'PAID',
-            },
-        });
+        const updatedBooking = await BookingRepository.updateStatus(bookingId, 'PAID');
 
-        // 6. Cập nhật payment record
-        if (booking.payment) {
+        // 6. Cập nhật hoặc tạo payment record
+        const existingPayment = await PaymentRepository.findByBookingId(bookingId);
+
+        if (existingPayment) {
             // Payment đã tồn tại, cập nhật
-            await prisma.payment.update({
-                where: { id: booking.payment.id },
-                data: {
-                    status: 'COMPLETED',
-                    method: method || booking.payment.method,
-                    transactionId: transactionId || null,
-                    paidAt: new Date(),
-                    metadata: notes ? { notes } : undefined,
-                },
+            await PaymentRepository.update(existingPayment.id, {
+                status: 'COMPLETED',
+                method: method || existingPayment.method,
+                transactionId: transactionId || null,
+                paidAt: new Date(),
+                metadata: notes ? JSON.stringify({ notes }) : null,
             });
         } else {
             // Chưa có payment, tạo mới
-            await prisma.payment.create({
-                data: {
-                    bookingId: booking.id,
-                    amount: booking.totalPrice,
-                    method: method || 'CASH',
-                    status: 'COMPLETED',
-                    transactionId: transactionId || null,
-                    paidAt: new Date(),
-                    metadata: notes ? { notes } : undefined,
-                },
+            await PaymentRepository.create({
+                bookingId: booking.id,
+                amount: booking.totalPrice,
+                method: method || 'CASH',
+                status: 'COMPLETED',
+                transactionId: transactionId || null,
+                paidAt: new Date(),
+                metadata: notes ? JSON.stringify({ notes }) : null,
             });
         }
 

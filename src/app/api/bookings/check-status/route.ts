@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { BookingRepository } from '@/lib/repositories/booking-repository';
 
 export async function GET(request: NextRequest) {
     try {
@@ -14,16 +14,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Find booking
-        const booking = await prisma.booking.findUnique({
-            where: { bookingCode },
-            select: {
-                id: true,
-                bookingCode: true,
-                status: true,
-                totalPrice: true,
-                customerName: true,
-            },
-        });
+        const booking = await BookingRepository.findByCode(bookingCode);
 
         if (!booking) {
             return NextResponse.json(

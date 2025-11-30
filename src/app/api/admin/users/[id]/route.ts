@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { UserRepository } from '@/lib/repositories/user-repository'
 
 // PATCH: Cập nhật role của user
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
 
     // Kiểm tra xác thực
@@ -38,7 +39,7 @@ export async function PATCH(
     }
 
     // Không cho phép tự thay đổi role của chính mình
-    if (session.user.id === params.id) {
+    if (session.user.id === id) {
       return NextResponse.json(
         { error: 'Cannot change your own role' },
         { status: 400 }
@@ -46,18 +47,23 @@ export async function PATCH(
     }
 
     // Cập nhật role
-    const user = await prisma.user.update({
-      where: { id: params.id },
-      data: { role },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true
+    const user = await UserRepository.update(id, { role });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role
       }
     })
-
-    return NextResponse.json({ user })
   } catch (error) {
     console.error('Error updating user role:', error)
     return NextResponse.json(
@@ -70,9 +76,10 @@ export async function PATCH(
 // DELETE: Xóa user
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const session = await getServerSession(authOptions)
 
     // Kiểm tra xác thực
@@ -92,7 +99,7 @@ export async function DELETE(
     }
 
     // Không cho phép tự xóa chính mình
-    if (session.user.id === params.id) {
+    if (session.user.id === id) {
       return NextResponse.json(
         { error: 'Cannot delete yourself' },
         { status: 400 }
@@ -100,14 +107,7 @@ export async function DELETE(
     }
 
     // Kiểm tra xem user có bookings không
-    const userWithBookings = await prisma.user.findUnique({
-      where: { id: params.id },
-      include: {
-        _count: {
-          select: { bookings: true }
-        }
-      }
-    })
+    const userWithBookings = await UserRepository.findByIdWithBookingCount(id);
 
     if (!userWithBookings) {
       return NextResponse.json(
@@ -124,9 +124,7 @@ export async function DELETE(
     }
 
     // Xóa user
-    await prisma.user.delete({
-      where: { id: params.id }
-    })
+    await UserRepository.delete(id);
 
     return NextResponse.json({ message: 'User deleted successfully' })
   } catch (error) {

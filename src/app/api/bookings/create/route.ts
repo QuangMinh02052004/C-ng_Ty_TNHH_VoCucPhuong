@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import prisma from '@/lib/prisma';
+import { RouteRepository } from '@/lib/repositories/route-repository';
+import { BookingRepository } from '@/lib/repositories/booking-repository';
 import { generateBookingCode, formatDateVN } from '@/lib/utils';
 import { sendBookingConfirmationEmail } from '@/services/email.service';
 import { sendBookingConfirmationSMS } from '@/services/sms.service';
@@ -33,12 +34,12 @@ export async function POST(request: NextRequest) {
         const validation = createBookingSchema.safeParse(body);
 
         if (!validation.success) {
-            console.error('❌ [API] Validation failed:', validation.error.errors);
+            console.error('❌ [API] Validation failed:', validation.error.issues);
             return NextResponse.json(
                 {
                     success: false,
                     error: 'Validation failed',
-                    details: validation.error.errors,
+                    details: validation.error.issues,
                 },
                 { status: 400 }
             );
@@ -50,9 +51,7 @@ export async function POST(request: NextRequest) {
         const data = validation.data;
 
         // 1. Get route information
-        const route = await prisma.route.findUnique({
-            where: { id: data.routeId },
-        });
+        const route = await RouteRepository.findById(data.routeId);
 
         if (!route) {
             return NextResponse.json(
@@ -75,15 +74,11 @@ export async function POST(request: NextRequest) {
         let bookingCode = generateBookingCode();
 
         // Ensure unique booking code
-        let exists = await prisma.booking.findUnique({
-            where: { bookingCode },
-        });
+        let exists = await BookingRepository.findByCode(bookingCode);
 
         while (exists) {
             bookingCode = generateBookingCode();
-            exists = await prisma.booking.findUnique({
-                where: { bookingCode },
-            });
+            exists = await BookingRepository.findByCode(bookingCode);
         }
 
         // 4. Generate QR codes
@@ -101,34 +96,33 @@ export async function POST(request: NextRequest) {
             amount: totalPrice,
         });
 
-        // 5. Create booking in database
-        const booking = await prisma.booking.create({
-            data: {
+        // 5. Create booking and payment in database (transaction)
+        const { booking, payment } = await BookingRepository.createWithPayment({
+            booking: {
                 bookingCode,
                 userId: data.userId || null,
                 customerName: data.customerName,
                 customerPhone: data.customerPhone,
                 customerEmail: data.customerEmail || null,
                 routeId: data.routeId,
+                scheduleId: null,
                 date: new Date(data.date),
                 departureTime: data.departureTime,
                 seats: data.seats,
                 totalPrice,
-                status: 'PENDING', // Chờ thanh toán
-                qrCode: ticketQRCode,
-            },
-            include: {
-                route: true,
-            },
-        });
-
-        // 6. Create payment record
-        await prisma.payment.create({
-            data: {
-                bookingId: booking.id,
-                amount: totalPrice,
-                method: 'QRCODE', // Default là quét QR
                 status: 'PENDING',
+                qrCode: ticketQRCode,
+                ticketUrl: null,
+                checkedIn: false,
+                notes: null,
+            },
+            payment: {
+                amount: totalPrice,
+                method: 'QRCODE',
+                status: 'PENDING',
+                transactionId: null,
+                paidAt: null,
+                metadata: null,
             },
         });
 
