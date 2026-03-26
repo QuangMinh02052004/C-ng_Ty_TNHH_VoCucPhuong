@@ -537,10 +537,20 @@ function DatVeContent() {
                             {/* Buttons */}
                             <div className="flex gap-4">
                                 <button
-                                    type="submit"
+                                    type={formData.departureTime && !isTimeSlotAvailable(formData.departureTime) ? 'button' : 'submit'}
                                     disabled={formData.seats === 0 || loading}
+                                    onClick={(e) => {
+                                        if (formData.departureTime && !isTimeSlotAvailable(formData.departureTime)) {
+                                            e.preventDefault();
+                                            setPopup({
+                                                show: true,
+                                                title: 'Không thể đặt vé',
+                                                message: `Khung giờ ${formData.departureTime} đã qua. Vui lòng chọn khung giờ khác hoặc chọn ngày khác.`
+                                            });
+                                        }
+                                    }}
                                     className={`flex-1 py-3 rounded-lg font-semibold transition flex items-center justify-center gap-2 ${
-                                        formData.seats === 0 || loading
+                                        formData.seats === 0 || loading || (formData.departureTime && !isTimeSlotAvailable(formData.departureTime))
                                             ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
                                             : 'bg-sky-500 text-white hover:bg-sky-600'
                                     }`}
@@ -550,6 +560,8 @@ function DatVeContent() {
                                             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                             <span>Đang xử lý...</span>
                                         </>
+                                    ) : formData.departureTime && !isTimeSlotAvailable(formData.departureTime) ? (
+                                        'Khung giờ đã qua'
                                     ) : (
                                         'Đặt vé ngay'
                                     )}
