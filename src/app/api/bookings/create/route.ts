@@ -74,16 +74,15 @@ export async function POST(request: NextRequest) {
 
         const data = validation.data;
 
-        // 1. Get route information (try local DB first, then TongHop API)
-        let route = await RouteRepository.findById(data.routeId);
-
-        if (!route) {
-            console.log('⚠️ [API] Route not found in local DB, fetching from TongHop...');
-            const tongHopRoute = await fetchRouteFromTongHop(data.routeId);
-            if (tongHopRoute) {
-                route = tongHopRoute as any;
-                console.log('✅ [API] Route found in TongHop:', tongHopRoute.from, '→', tongHopRoute.to);
-            }
+        // 1. Get route information (TongHop first, local DB fallback)
+        let route: any = null;
+        const tongHopRoute = await fetchRouteFromTongHop(data.routeId);
+        if (tongHopRoute) {
+            route = tongHopRoute;
+            console.log('✅ [API] Route from TongHop:', tongHopRoute.from, '→', tongHopRoute.to);
+        } else {
+            console.log('⚠️ [API] TongHop route not found, trying local DB...');
+            route = await RouteRepository.findById(data.routeId);
         }
 
         if (!route) {
