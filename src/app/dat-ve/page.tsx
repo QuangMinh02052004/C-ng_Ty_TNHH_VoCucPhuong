@@ -27,6 +27,7 @@ function DatVeContent() {
     const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [popup, setPopup] = useState<{ show: boolean; title: string; message: string }>({ show: false, title: '', message: '' });
 
     // Load routes from API
     useEffect(() => {
@@ -137,6 +138,16 @@ function DatVeContent() {
             return;
         }
 
+        // Kiểm tra giờ xuất bến đã qua chưa
+        if (!isTimeSlotAvailable(formData.departureTime)) {
+            setPopup({
+                show: true,
+                title: 'Không thể đặt vé',
+                message: `Khung giờ ${formData.departureTime} ngày ${formData.date} đã qua. Vui lòng chọn khung giờ khác hoặc chọn ngày khác.`
+            });
+            return;
+        }
+
         // Start loading
         setLoading(true);
 
@@ -208,6 +219,32 @@ function DatVeContent() {
 
     return (
         <div className="py-16 bg-gradient-to-b from-sky-50 to-white">
+            {/* Popup thông báo */}
+            {popup.show && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in">
+                        <div className="text-center mb-4">
+                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-800 mb-2">{popup.title}</h3>
+                            <p className="text-gray-600">{popup.message}</p>
+                        </div>
+                        <button
+                            onClick={() => {
+                                setPopup({ show: false, title: '', message: '' });
+                                setFormData(prev => ({ ...prev, departureTime: '' }));
+                            }}
+                            className="w-full bg-sky-500 hover:bg-sky-600 text-white py-3 rounded-lg font-semibold transition-colors"
+                        >
+                            Chọn giờ khác
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <div className="container mx-auto px-4">
                 <div className="max-w-3xl mx-auto">
                     <div className="text-center mb-8">
@@ -398,7 +435,18 @@ function DatVeContent() {
                                     </label>
                                     <select
                                         value={formData.departureTime}
-                                        onChange={(e) => setFormData({ ...formData, departureTime: e.target.value })}
+                                        onChange={(e) => {
+                                            const time = e.target.value;
+                                            if (time && !isTimeSlotAvailable(time)) {
+                                                setPopup({
+                                                    show: true,
+                                                    title: 'Không thể đặt vé',
+                                                    message: `Khung giờ ${time} đã qua. Vui lòng chọn khung giờ khác hoặc chọn ngày khác.`
+                                                });
+                                                return;
+                                            }
+                                            setFormData({ ...formData, departureTime: time });
+                                        }}
                                         className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                         required
                                         disabled={!selectedRoute}
@@ -410,7 +458,7 @@ function DatVeContent() {
                                                 value={time}
                                                 disabled={!isTimeSlotAvailable(time)}
                                             >
-                                                {time} {!isTimeSlotAvailable(time) && '(Không khả dụng)'}
+                                                {time} {!isTimeSlotAvailable(time) && '(Đã qua)'}
                                             </option>
                                         ))}
                                     </select>
