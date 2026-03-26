@@ -15,6 +15,13 @@ interface SendEmailParams {
 
 // Tạo transporter
 const createTransporter = () => {
+    console.log('📧 [Email] Creating transporter with config:', {
+        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+        port: process.env.EMAIL_PORT || '587',
+        user: process.env.EMAIL_USER,
+        hasPassword: !!process.env.EMAIL_PASSWORD,
+    });
+
     return createTransport({
         host: process.env.EMAIL_HOST || 'smtp.gmail.com',
         port: parseInt(process.env.EMAIL_PORT || '587'),
@@ -31,6 +38,12 @@ const createTransporter = () => {
  */
 export async function sendEmail({ to, subject, html, text }: SendEmailParams) {
     try {
+        console.log('📧 [Email] Attempting to send email:', {
+            to,
+            subject,
+            from: process.env.EMAIL_FROM || '"Xe Võ Cúc Phương" <vocucphuong0018@gmail.com>',
+        });
+
         const transporter = createTransporter();
 
         const info = await transporter.sendMail({
@@ -41,10 +54,15 @@ export async function sendEmail({ to, subject, html, text }: SendEmailParams) {
             html,
         });
 
-        console.log('Email sent successfully:', info.messageId);
+        console.log('✅ [Email] Email sent successfully:', info.messageId);
         return { success: true, messageId: info.messageId };
-    } catch (error) {
-        console.error('Error sending email:', error);
+    } catch (error: any) {
+        console.error('❌ [Email] Error sending email:', {
+            message: error.message,
+            code: error.code,
+            command: error.command,
+            response: error.response,
+        });
         return { success: false, error };
     }
 }

@@ -1,40 +1,70 @@
 /**
  * Route Repository
- * Các hàm query liên quan đến routes (tuyến đường)
+ * Các hàm query liên quan đến routes (PostgreSQL)
  */
 
 import { query, queryOne } from '../db';
 import { Route } from '../db-types';
+
+// Helper function để map từ DB row sang Route object
+function mapRowToRoute(row: Record<string, unknown>): Route {
+    return {
+        id: row.id as string,
+        from: row.origin as string,
+        to: row.destination as string,
+        price: row.price as number,
+        duration: row.duration as string,
+        busType: row.bus_type as string,
+        distance: row.distance as string | null,
+        description: row.description as string | null,
+        routeMapImage: row.route_map_image as string | null,
+        thumbnailImage: row.thumbnail_image as string | null,
+        images: row.images as string | null,
+        fromLat: row.from_lat as number | null,
+        fromLng: row.from_lng as number | null,
+        toLat: row.to_lat as number | null,
+        toLng: row.to_lng as number | null,
+        operatingStart: row.operating_start as string,
+        operatingEnd: row.operating_end as string,
+        intervalMinutes: row.interval_minutes as number,
+        isActive: row.is_active as boolean,
+        createdAt: row.created_at as Date,
+        updatedAt: row.updated_at as Date,
+    };
+}
 
 export class RouteRepository {
     /**
      * Tìm route theo ID
      */
     static async findById(id: string): Promise<Route | null> {
-        return await queryOne<Route>(
+        const result = await queryOne<Record<string, unknown>>(
             'SELECT * FROM routes WHERE id = @id',
             { id }
         );
+        return result ? mapRowToRoute(result) : null;
     }
 
     /**
      * Tìm tất cả routes đang hoạt động
      */
     static async findActive(): Promise<Route[]> {
-        return await query<Route>(
-            'SELECT * FROM routes WHERE isActive = 1 ORDER BY [from], [to]',
+        const results = await query<Record<string, unknown>>(
+            'SELECT * FROM routes WHERE is_active = true ORDER BY origin, destination',
             {}
         );
+        return results.map(mapRowToRoute);
     }
 
     /**
      * Tìm routes theo điểm đi và điểm đến
      */
     static async findByFromTo(from: string, to: string): Promise<Route[]> {
-        return await query<Route>(
-            'SELECT * FROM routes WHERE [from] = @from AND [to] = @to AND isActive = 1',
+        const results = await query<Record<string, unknown>>(
+            'SELECT * FROM routes WHERE origin = @from AND destination = @to AND is_active = true',
             { from, to }
         );
+        return results.map(mapRowToRoute);
     }
 
     /**
@@ -49,9 +79,9 @@ export class RouteRepository {
 
         await query(
             `INSERT INTO routes (
-                id, [from], [to], price, duration, busType, distance, description,
-                routeMapImage, thumbnailImage, images, fromLat, fromLng, toLat, toLng,
-                operatingStart, operatingEnd, intervalMinutes, isActive, createdAt, updatedAt
+                id, origin, destination, price, duration, bus_type, distance, description,
+                route_map_image, thumbnail_image, images, from_lat, from_lng, to_lat, to_lng,
+                operating_start, operating_end, interval_minutes, is_active, created_at, updated_at
             ) VALUES (
                 @id, @from, @to, @price, @duration, @busType, @distance, @description,
                 @routeMapImage, @thumbnailImage, @images, @fromLat, @fromLng, @toLat, @toLng,
@@ -93,12 +123,28 @@ export class RouteRepository {
         data: Partial<Omit<Route, 'id' | 'createdAt' | 'updatedAt'>>
     ): Promise<Route | null> {
         const updates: string[] = [];
-        const params: Record<string, any> = { id, updatedAt: new Date() };
+        const params: Record<string, unknown> = { id, updatedAt: new Date() };
+
+        // Map camelCase to snake_case
+        const columnMap: Record<string, string> = {
+            from: 'origin',
+            to: 'destination',
+            busType: 'bus_type',
+            routeMapImage: 'route_map_image',
+            thumbnailImage: 'thumbnail_image',
+            fromLat: 'from_lat',
+            fromLng: 'from_lng',
+            toLat: 'to_lat',
+            toLng: 'to_lng',
+            operatingStart: 'operating_start',
+            operatingEnd: 'operating_end',
+            intervalMinutes: 'interval_minutes',
+            isActive: 'is_active',
+        };
 
         Object.entries(data).forEach(([key, value]) => {
             if (value !== undefined) {
-                // Đảm bảo từ khóa SQL được escape
-                const columnName = key === 'from' || key === 'to' ? `[${key}]` : key;
+                const columnName = columnMap[key] || key;
                 updates.push(`${columnName} = @${key}`);
 
                 // Parse images nếu là object
@@ -114,7 +160,7 @@ export class RouteRepository {
             return this.findById(id);
         }
 
-        updates.push('updatedAt = @updatedAt');
+        updates.push('updated_at = @updatedAt');
 
         await query(
             `UPDATE routes SET ${updates.join(', ')} WHERE id = @id`,
@@ -125,11 +171,11 @@ export class RouteRepository {
     }
 
     /**
-     * Xóa route (soft delete - set isActive = false)
+     * Xóa route (soft delete - set is_active = false)
      */
     static async delete(id: string): Promise<boolean> {
         await query(
-            'UPDATE routes SET isActive = 0, updatedAt = @updatedAt WHERE id = @id',
+            'UPDATE routes SET is_active = false, updated_at = @updatedAt WHERE id = @id',
             { id, updatedAt: new Date() }
         );
         return true;
@@ -139,56 +185,35 @@ export class RouteRepository {
      * Tìm tất cả routes (admin)
      */
     static async findAll(): Promise<Route[]> {
-        return await query<Route>(
-            'SELECT * FROM routes ORDER BY isActive DESC, [from], [to]',
+        const results = await query<Record<string, unknown>>(
+            'SELECT * FROM routes ORDER BY is_active DESC, origin, destination',
             {}
         );
+        return results.map(mapRowToRoute);
     }
 
     /**
      * Tìm tất cả routes với số lượng bookings và schedules
      */
-    static async findAllWithCounts(): Promise<any[]> {
-        const results = await query<any>(
+    static async findAllWithCounts(): Promise<(Route & { _count: { bookings: number; schedules: number } })[]> {
+        const results = await query<Record<string, unknown>>(
             `SELECT
                 r.*,
-                COUNT(DISTINCT b.id) as bookingCount,
-                COUNT(DISTINCT s.id) as scheduleCount
+                COUNT(DISTINCT b.id) as booking_count,
+                COUNT(DISTINCT s.id) as schedule_count
             FROM routes r
-            LEFT JOIN bookings b ON r.id = b.routeId
-            LEFT JOIN schedules s ON r.id = s.routeId
-            GROUP BY r.id, r.[from], r.[to], r.price, r.duration, r.busType, r.distance, r.description,
-                     r.routeMapImage, r.thumbnailImage, r.images, r.fromLat, r.fromLng, r.toLat, r.toLng,
-                     r.operatingStart, r.operatingEnd, r.intervalMinutes, r.isActive, r.createdAt, r.updatedAt
-            ORDER BY r.createdAt DESC`,
+            LEFT JOIN bookings b ON r.id = b.route_id
+            LEFT JOIN schedules s ON r.id = s.route_id
+            GROUP BY r.id
+            ORDER BY r.created_at DESC`,
             {}
         );
 
-        return results.map((result: any) => ({
-            id: result.id,
-            from: result.from,
-            to: result.to,
-            price: result.price,
-            duration: result.duration,
-            busType: result.busType,
-            distance: result.distance,
-            description: result.description,
-            routeMapImage: result.routeMapImage,
-            thumbnailImage: result.thumbnailImage,
-            images: result.images,
-            fromLat: result.fromLat,
-            fromLng: result.fromLng,
-            toLat: result.toLat,
-            toLng: result.toLng,
-            operatingStart: result.operatingStart,
-            operatingEnd: result.operatingEnd,
-            intervalMinutes: result.intervalMinutes,
-            isActive: result.isActive,
-            createdAt: result.createdAt,
-            updatedAt: result.updatedAt,
+        return results.map((result) => ({
+            ...mapRowToRoute(result),
             _count: {
-                bookings: result.bookingCount || 0,
-                schedules: result.scheduleCount || 0,
+                bookings: parseInt(String(result.booking_count)) || 0,
+                schedules: parseInt(String(result.schedule_count)) || 0,
             },
         }));
     }
@@ -196,49 +221,27 @@ export class RouteRepository {
     /**
      * Tìm route với số lượng bookings và schedules
      */
-    static async findByIdWithCounts(id: string): Promise<any | null> {
-        const result = await queryOne<any>(
+    static async findByIdWithCounts(id: string): Promise<(Route & { _count: { bookings: number; schedules: number } }) | null> {
+        const result = await queryOne<Record<string, unknown>>(
             `SELECT
                 r.*,
-                COUNT(DISTINCT b.id) as bookingCount,
-                COUNT(DISTINCT s.id) as scheduleCount
+                COUNT(DISTINCT b.id) as booking_count,
+                COUNT(DISTINCT s.id) as schedule_count
             FROM routes r
-            LEFT JOIN bookings b ON r.id = b.routeId
-            LEFT JOIN schedules s ON r.id = s.routeId
+            LEFT JOIN bookings b ON r.id = b.route_id
+            LEFT JOIN schedules s ON r.id = s.route_id
             WHERE r.id = @id
-            GROUP BY r.id, r.[from], r.[to], r.price, r.duration, r.busType, r.distance, r.description,
-                     r.routeMapImage, r.thumbnailImage, r.images, r.fromLat, r.fromLng, r.toLat, r.toLng,
-                     r.operatingStart, r.operatingEnd, r.intervalMinutes, r.isActive, r.createdAt, r.updatedAt`,
+            GROUP BY r.id`,
             { id }
         );
 
         if (!result) return null;
 
         return {
-            id: result.id,
-            from: result.from,
-            to: result.to,
-            price: result.price,
-            duration: result.duration,
-            busType: result.busType,
-            distance: result.distance,
-            description: result.description,
-            routeMapImage: result.routeMapImage,
-            thumbnailImage: result.thumbnailImage,
-            images: result.images,
-            fromLat: result.fromLat,
-            fromLng: result.fromLng,
-            toLat: result.toLat,
-            toLng: result.toLng,
-            operatingStart: result.operatingStart,
-            operatingEnd: result.operatingEnd,
-            intervalMinutes: result.intervalMinutes,
-            isActive: result.isActive,
-            createdAt: result.createdAt,
-            updatedAt: result.updatedAt,
+            ...mapRowToRoute(result),
             _count: {
-                bookings: result.bookingCount || 0,
-                schedules: result.scheduleCount || 0,
+                bookings: parseInt(String(result.booking_count)) || 0,
+                schedules: parseInt(String(result.schedule_count)) || 0,
             },
         };
     }

@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { routes } from '@/data/routes';
 
-export default function DatVePage() {
+function DatVeContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const { data: session } = useSession();
@@ -17,7 +17,7 @@ export default function DatVePage() {
         customerName: '',
         phone: '',
         email: '',
-        date: '',
+        date: new Date().toISOString().split('T')[0], // Mặc định là ngày hôm nay
         departureTime: '',
         seats: 1,
     });
@@ -40,6 +40,18 @@ export default function DatVePage() {
             }
         }
     }, [routeIdFromUrl, timeFromUrl]);
+
+    // Tự động điền thông tin khách hàng khi đã đăng nhập
+    useEffect(() => {
+        if (session?.user) {
+            setFormData(prev => ({
+                ...prev,
+                customerName: session.user.name || prev.customerName,
+                email: session.user.email || prev.email,
+                phone: session.user.phone || prev.phone,
+            }));
+        }
+    }, [session]);
 
     // Lấy danh sách khung giờ theo tuyến đường
     const getTimeSlots = () => {
@@ -409,7 +421,7 @@ export default function DatVePage() {
 
                             <div>
                                 <label className="block text-sm font-medium mb-2">
-                                    Email
+                                    Email <span className="text-gray-400 text-xs">(để nhận xác nhận vé)</span>
                                 </label>
                                 <input
                                     type="email"
@@ -418,6 +430,9 @@ export default function DatVePage() {
                                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                     placeholder="example@email.com"
                                 />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    📧 Nhập email để nhận thông tin xác nhận vé và mã QR qua email
+                                </p>
                             </div>
 
                             {/* Thời gian và số ghế */}
@@ -586,5 +601,20 @@ export default function DatVePage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function DatVePage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-5xl mb-4">🚌</div>
+                    <p className="text-gray-600">Đang tải...</p>
+                </div>
+            </div>
+        }>
+            <DatVeContent />
+        </Suspense>
     );
 }

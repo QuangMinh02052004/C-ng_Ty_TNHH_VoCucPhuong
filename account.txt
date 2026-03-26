@@ -1,14 +1,2 @@
-📝 Login credentials:
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Admin:
-  Email: admin@vocucphuong.com
-  Password: admin123456
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Staff:
-  Email: staff@vocucphuong.com
-  Password: staff123456
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-User:
-  Email: user@example.com
-  Password: user123456
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Username: admin, Password: admin123
+Username: nv_andong, Password: nv123456

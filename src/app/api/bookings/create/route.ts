@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
 
         // 7. Send confirmation email (async, don't wait)
         if (data.customerEmail) {
+            console.log('📧 [Booking] Customer email provided, sending confirmation to:', data.customerEmail);
             sendBookingConfirmationEmail({
                 to: data.customerEmail,
                 customerName: data.customerName,
@@ -137,7 +138,17 @@ export async function POST(request: NextRequest) {
                 departureTime: data.departureTime,
                 seats: data.seats,
                 totalPrice,
-            }).catch(err => console.error('[Email] Failed to send:', err));
+            })
+            .then(result => {
+                if (result.success) {
+                    console.log('✅ [Booking] Confirmation email sent successfully to:', data.customerEmail);
+                } else {
+                    console.error('❌ [Booking] Failed to send confirmation email:', result.error);
+                }
+            })
+            .catch(err => console.error('❌ [Booking] Exception sending email:', err));
+        } else {
+            console.log('⚠️ [Booking] No customer email provided, skipping email confirmation');
         }
 
         // 8. Send confirmation SMS (async, don't wait)
@@ -150,7 +161,20 @@ export async function POST(request: NextRequest) {
             departureTime: data.departureTime,
         }).catch(err => console.error('[SMS] Failed to send:', err));
 
-        // 9. Return response with booking info and QR codes
+        // 9. Gửi booking sang hệ thống Tổng Hợp (async, don't wait)
+        sendToTongHop({
+            bookingCode,
+            customerName: data.customerName,
+            customerPhone: data.customerPhone,
+            date: data.date,
+            departureTime: data.departureTime,
+            seats: data.seats,
+            totalPrice,
+            route: `${route.from} → ${route.to}`,
+            notes: booking.notes ?? null,
+        }).catch(err => console.error('[TongHop] Failed to send:', err));
+
+        // 10. Return response with booking info and QR codes
         return NextResponse.json({
             success: true,
             message: 'Booking created successfully',
@@ -192,5 +216,45 @@ export async function POST(request: NextRequest) {
             },
             { status: 500 }
         );
+    }
+}
+
+// Helper function để gửi booking sang hệ thống Tổng Hợp
+async function sendToTongHop(bookingData: {
+    bookingCode: string;
+    customerName: string;
+    customerPhone: string;
+    date: string;
+    departureTime: string;
+    seats: number;
+    totalPrice: number;
+    route: string;
+    notes: string | null;
+}) {
+    // URL của hệ thống Tổng Hợp (vocucphuong-internal)
+    const TONGHOP_URL = process.env.TONGHOP_URL || 'http://localhost:3001';
+
+    try {
+        // Gọi webhook endpoint: /api/tong-hop/webhook/datve
+        const response = await fetch(`${TONGHOP_URL}/api/tong-hop/webhook/datve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(bookingData),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log('[DatVe] ✅ Đã gửi booking sang Tổng Hợp:', data.data);
+        } else {
+            console.error('[DatVe] ❌ Lỗi từ Tổng Hợp:', data.error);
+        }
+
+        return data;
+    } catch (error) {
+        console.error('[DatVe] ⚠️ Không thể kết nối Tổng Hợp:', error);
+        throw error;
     }
 }

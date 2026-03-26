@@ -44,12 +44,15 @@ export async function POST(request: NextRequest) {
         });
 
         if (!result.success) {
-            console.error('[API] Error sending contact email:', result.error);
+            const errMsg = result.error?.message || 'Unknown email error';
+            const errCode = result.error?.code || '';
+            console.error('[API] Error sending contact email:', errMsg, errCode);
             return NextResponse.json(
                 {
                     success: false,
                     error: 'Failed to send email',
                     message: 'Không thể gửi email. Vui lòng thử lại sau hoặc liên hệ trực tiếp qua hotline.',
+                    debug: process.env.NODE_ENV !== 'production' ? `${errCode}: ${errMsg}` : undefined,
                 },
                 { status: 500 }
             );

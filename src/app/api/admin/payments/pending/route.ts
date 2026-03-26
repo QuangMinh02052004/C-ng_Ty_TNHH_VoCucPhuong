@@ -26,7 +26,8 @@ export async function GET(request: NextRequest) {
         });
 
         // 3. Format data
-        const formattedBookings = pendingBookings.map(booking => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const formattedBookings = pendingBookings.map((booking: any) => ({
             id: booking.id,
             bookingCode: booking.bookingCode,
             customerName: booking.customerName,

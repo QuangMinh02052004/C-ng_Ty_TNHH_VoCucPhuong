@@ -127,3 +127,235 @@ body {
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+
+/* ===== MOBILE APP RESPONSIVE ===== */
+@media (max-width: 768px) {
+  /* Form inputs - Prevent zoom on iOS */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* Button sizes for touch */
+  button {
+    min-height: 44px;
+  }
+
+  /* Table improvements */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Modal on mobile */
+  .fixed.inset-0 > div {
+    width: 95% !important;
+    max-width: none !important;
+    margin: 10px;
+  }
+
+  /* Time slot grid */
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* Text size for readability */
+  .text-xs { font-size: 11px !important; }
+  .text-sm { font-size: 13px !important; }
+}
+
+/* Extra small devices */
+@media (max-width: 400px) {
+  .text-xs { font-size: 10px !important; }
+  .text-sm { font-size: 12px !important; }
+
+  button {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* ===== PREVENT CONTENT OVERLAP - Force reflow on orientation change ===== */
+html, body {
+  overflow-x: hidden;
+  min-height: 100%;
+  min-height: -webkit-fill-available;
+}
+
+/* Safe area support */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ===== LANDSCAPE MODE - Hiển thị như desktop ===== */
+@media (orientation: landscape) and (max-height: 500px) {
+  /* Force reflow */
+  html, body {
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh !important;
+  }
+
+  /* Reset mobile styles */
+  input, select, textarea {
+    font-size: 14px !important;
+  }
+
+  button {
+    min-height: auto;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+  }
+
+  /* Table - normal display */
+  table {
+    display: table;
+    overflow-x: visible;
+  }
+
+  /* Modal - wider */
+  .fixed.inset-0 > div {
+    width: 80% !important;
+    max-width: 900px !important;
+    margin: auto;
+  }
+
+  /* Grid - horizontal layout for time slots */
+  .grid-cols-2 {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* Text size - smaller for landscape */
+  .text-xs { font-size: 11px !important; }
+  .text-sm { font-size: 12px !important; }
+  .text-base { font-size: 13px !important; }
+  .text-lg { font-size: 14px !important; }
+  .text-xl { font-size: 16px !important; }
+  .text-2xl { font-size: 18px !important; }
+  .text-3xl { font-size: 20px !important; }
+  .text-4xl { font-size: 24px !important; }
+
+  /* Navigation - compact */
+  nav {
+    padding: 4px 12px !important;
+  }
+
+  /* Header compact */
+  header {
+    padding: 2px 0 !important;
+  }
+
+  /* Logo smaller in landscape */
+  .landscape-logo {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  /* Title smaller in landscape */
+  .landscape-title {
+    font-size: 14px !important;
+    white-space: nowrap;
+  }
+
+  /* Hide slogan in landscape */
+  .landscape-hidden {
+    display: none !important;
+  }
+
+  /* Sections - compact padding */
+  section {
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+  }
+
+  .py-16 {
+    padding-top: 16px !important;
+    padding-bottom: 16px !important;
+  }
+
+  /* Container */
+  .container {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  /* Margins reduced */
+  .mb-12 { margin-bottom: 12px !important; }
+  .mb-8 { margin-bottom: 8px !important; }
+  .mb-6 { margin-bottom: 6px !important; }
+  .mb-4 { margin-bottom: 4px !important; }
+  .mb-3 { margin-bottom: 3px !important; }
+
+  /* Padding reduced */
+  .p-6, .p-5 { padding: 10px !important; }
+  .p-4 { padding: 8px !important; }
+  .p-3 { padding: 6px !important; }
+
+  /* Gap reduced */
+  .gap-6 { gap: 10px !important; }
+  .gap-4 { gap: 6px !important; }
+
+  /* Image heights - smaller */
+  .h-48 { height: 100px !important; }
+
+  /* Card border radius */
+  .rounded-xl { border-radius: 8px !important; }
+  .rounded-lg { border-radius: 6px !important; }
+
+  /* Grid layouts for landscape */
+  .grid-cols-1.md\:grid-cols-2.lg\:grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  .grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  .grid-cols-1.md\:grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  /* Hide some decorative elements */
+  .animate-float,
+  .animate-ping-slow {
+    animation: none !important;
+  }
+
+  /* Fix absolute/fixed elements */
+  .fixed {
+    position: fixed !important;
+  }
+
+  .absolute {
+    position: absolute !important;
+  }
+}
+
+/* ===== PORTRAIT MODE - Reset styles properly ===== */
+@media (orientation: portrait) {
+  /* Ensure clean reset */
+  html, body {
+    overflow-y: auto !important;
+    height: auto !important;
+  }
+
+  /* Reset grid to single column on mobile portrait */
+  @media (max-width: 768px) {
+    .grid-cols-1.md\:grid-cols-2.lg\:grid-cols-3,
+    .grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4,
+    .grid-cols-1.md\:grid-cols-3 {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
+  /* Reset image heights */
+  .h-48 {
+    height: 12rem !important;
+  }
+}

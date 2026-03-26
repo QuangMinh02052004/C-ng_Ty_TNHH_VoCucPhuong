@@ -1,27 +1,26 @@
 -- ============================================
--- Script: Tạo Tables cho Database XeVoCucPhuong
--- Mô tả: Tạo tất cả các bảng và quan hệ cho hệ thống
+-- BACKUP GỐC - SQL SERVER
+-- Database: XeVoCucPhuong
+-- Ngày backup: 2026-01-14
 -- ============================================
+
+-- ============================================
+-- PHẦN 1: TẠO DATABASE
+-- ============================================
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'XeVoCucPhuong')
+BEGIN
+    CREATE DATABASE XeVoCucPhuong;
+END
+GO
 
 USE XeVoCucPhuong;
 GO
 
 -- ============================================
--- Xóa các bảng cũ nếu tồn tại (theo thứ tự ngược lại để tránh lỗi foreign key)
+-- PHẦN 2: TẠO CÁC BẢNG
 -- ============================================
-IF OBJECT_ID('payments', 'U') IS NOT NULL DROP TABLE payments;
-IF OBJECT_ID('bookings', 'U') IS NOT NULL DROP TABLE bookings;
-IF OBJECT_ID('schedules', 'U') IS NOT NULL DROP TABLE schedules;
-IF OBJECT_ID('buses', 'U') IS NOT NULL DROP TABLE buses;
-IF OBJECT_ID('routes', 'U') IS NOT NULL DROP TABLE routes;
-IF OBJECT_ID('sessions', 'U') IS NOT NULL DROP TABLE sessions;
-IF OBJECT_ID('accounts', 'U') IS NOT NULL DROP TABLE accounts;
-IF OBJECT_ID('users', 'U') IS NOT NULL DROP TABLE users;
-GO
 
--- ============================================
 -- Bảng: users (Người dùng)
--- ============================================
 CREATE TABLE users (
     id NVARCHAR(255) PRIMARY KEY,
     email NVARCHAR(255) UNIQUE NOT NULL,
@@ -34,14 +33,8 @@ CREATE TABLE users (
     createdAt DATETIME2 DEFAULT GETDATE() NOT NULL,
     updatedAt DATETIME2 DEFAULT GETDATE() NOT NULL
 );
-GO
 
-PRINT 'Bảng users đã được tạo';
-GO
-
--- ============================================
--- Bảng: accounts (Tài khoản OAuth/Social Login)
--- ============================================
+-- Bảng: accounts (Tài khoản OAuth)
 CREATE TABLE accounts (
     id NVARCHAR(255) PRIMARY KEY,
     userId NVARCHAR(255) NOT NULL,
@@ -58,14 +51,8 @@ CREATE TABLE accounts (
     CONSTRAINT FK_accounts_users FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT UQ_accounts_provider UNIQUE (provider, providerAccountId)
 );
-GO
 
-PRINT 'Bảng accounts đã được tạo';
-GO
-
--- ============================================
--- Bảng: sessions (Phiên đăng nhập)
--- ============================================
+-- Bảng: sessions
 CREATE TABLE sessions (
     id NVARCHAR(255) PRIMARY KEY,
     sessionToken NVARCHAR(500) UNIQUE NOT NULL,
@@ -73,14 +60,8 @@ CREATE TABLE sessions (
     expires DATETIME2 NOT NULL,
     CONSTRAINT FK_sessions_users FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
 );
-GO
 
-PRINT 'Bảng sessions đã được tạo';
-GO
-
--- ============================================
 -- Bảng: routes (Tuyến đường)
--- ============================================
 CREATE TABLE routes (
     id NVARCHAR(255) PRIMARY KEY,
     [from] NVARCHAR(255) NOT NULL,
@@ -92,7 +73,7 @@ CREATE TABLE routes (
     description NVARCHAR(MAX),
     routeMapImage NVARCHAR(500),
     thumbnailImage NVARCHAR(500),
-    images NVARCHAR(MAX), -- JSON data
+    images NVARCHAR(MAX),
     fromLat FLOAT,
     fromLng FLOAT,
     toLat FLOAT,
@@ -104,14 +85,8 @@ CREATE TABLE routes (
     createdAt DATETIME2 DEFAULT GETDATE() NOT NULL,
     updatedAt DATETIME2 DEFAULT GETDATE() NOT NULL
 );
-GO
 
-PRINT 'Bảng routes đã được tạo';
-GO
-
--- ============================================
 -- Bảng: buses (Xe buýt)
--- ============================================
 CREATE TABLE buses (
     id NVARCHAR(255) PRIMARY KEY,
     licensePlate NVARCHAR(50) UNIQUE NOT NULL,
@@ -121,14 +96,8 @@ CREATE TABLE buses (
     createdAt DATETIME2 DEFAULT GETDATE() NOT NULL,
     updatedAt DATETIME2 DEFAULT GETDATE() NOT NULL
 );
-GO
 
-PRINT 'Bảng buses đã được tạo';
-GO
-
--- ============================================
 -- Bảng: schedules (Lịch trình)
--- ============================================
 CREATE TABLE schedules (
     id NVARCHAR(255) PRIMARY KEY,
     routeId NVARCHAR(255) NOT NULL,
@@ -141,17 +110,10 @@ CREATE TABLE schedules (
     createdAt DATETIME2 DEFAULT GETDATE() NOT NULL,
     updatedAt DATETIME2 DEFAULT GETDATE() NOT NULL,
     CONSTRAINT FK_schedules_routes FOREIGN KEY (routeId) REFERENCES routes(id) ON DELETE CASCADE,
-    CONSTRAINT FK_schedules_buses FOREIGN KEY (busId) REFERENCES buses(id) ON DELETE CASCADE,
-    CONSTRAINT UQ_schedules_route_bus_date_time UNIQUE (routeId, busId, date, departureTime)
+    CONSTRAINT FK_schedules_buses FOREIGN KEY (busId) REFERENCES buses(id) ON DELETE CASCADE
 );
-GO
 
-PRINT 'Bảng schedules đã được tạo';
-GO
-
--- ============================================
 -- Bảng: bookings (Đặt vé)
--- ============================================
 CREATE TABLE bookings (
     id NVARCHAR(255) PRIMARY KEY,
     bookingCode NVARCHAR(100) UNIQUE NOT NULL,
@@ -165,7 +127,7 @@ CREATE TABLE bookings (
     departureTime NVARCHAR(50) NOT NULL,
     seats INT DEFAULT 1 NOT NULL,
     totalPrice INT NOT NULL,
-    status NVARCHAR(50) DEFAULT 'PENDING' NOT NULL CHECK (status IN ('PENDING', 'CONFIRMED', 'PAID', 'CANCELLED', 'COMPLETED')),
+    status NVARCHAR(50) DEFAULT 'PENDING' NOT NULL,
     qrCode NVARCHAR(MAX),
     ticketUrl NVARCHAR(500),
     checkedIn BIT DEFAULT 0 NOT NULL,
@@ -175,56 +137,60 @@ CREATE TABLE bookings (
     createdAt DATETIME2 DEFAULT GETDATE() NOT NULL,
     updatedAt DATETIME2 DEFAULT GETDATE() NOT NULL,
     CONSTRAINT FK_bookings_routes FOREIGN KEY (routeId) REFERENCES routes(id),
-    CONSTRAINT FK_bookings_schedules FOREIGN KEY (scheduleId) REFERENCES schedules(id),
     CONSTRAINT FK_bookings_users FOREIGN KEY (userId) REFERENCES users(id)
 );
-GO
 
-PRINT 'Bảng bookings đã được tạo';
-GO
-
--- ============================================
 -- Bảng: payments (Thanh toán)
--- ============================================
 CREATE TABLE payments (
     id NVARCHAR(255) PRIMARY KEY,
     bookingId NVARCHAR(255) UNIQUE NOT NULL,
     amount INT NOT NULL,
-    method NVARCHAR(50) NOT NULL CHECK (method IN ('CASH', 'BANK_TRANSFER', 'QRCODE', 'VNPAY', 'MOMO')),
-    status NVARCHAR(50) DEFAULT 'PENDING' NOT NULL CHECK (status IN ('PENDING', 'COMPLETED', 'FAILED', 'REFUNDED')),
+    method NVARCHAR(50) NOT NULL,
+    status NVARCHAR(50) DEFAULT 'PENDING' NOT NULL,
     transactionId NVARCHAR(255),
     paidAt DATETIME2,
-    metadata NVARCHAR(MAX), -- JSON data
+    metadata NVARCHAR(MAX),
     createdAt DATETIME2 DEFAULT GETDATE() NOT NULL,
     updatedAt DATETIME2 DEFAULT GETDATE() NOT NULL,
     CONSTRAINT FK_payments_bookings FOREIGN KEY (bookingId) REFERENCES bookings(id) ON DELETE CASCADE
 );
-GO
-
-PRINT 'Bảng payments đã được tạo';
-GO
 
 -- ============================================
--- Tạo Indexes để tối ưu performance
+-- PHẦN 3: DỮ LIỆU MẪU
 -- ============================================
-CREATE INDEX IDX_accounts_userId ON accounts(userId);
-CREATE INDEX IDX_sessions_userId ON sessions(userId);
-CREATE INDEX IDX_schedules_routeId ON schedules(routeId);
-CREATE INDEX IDX_schedules_busId ON schedules(busId);
-CREATE INDEX IDX_schedules_date ON schedules(date);
-CREATE INDEX IDX_bookings_userId ON bookings(userId);
-CREATE INDEX IDX_bookings_routeId ON bookings(routeId);
-CREATE INDEX IDX_bookings_scheduleId ON bookings(scheduleId);
-CREATE INDEX IDX_bookings_status ON bookings(status);
-CREATE INDEX IDX_bookings_date ON bookings(date);
-CREATE INDEX IDX_payments_bookingId ON payments(bookingId);
-CREATE INDEX IDX_payments_status ON payments(status);
-GO
 
-PRINT 'Các indexes đã được tạo';
-GO
+-- Routes (Tuyến đường)
+INSERT INTO routes (id, [from], [to], price, duration, busType, operatingStart, operatingEnd, description, isActive, intervalMinutes)
+VALUES
+('1', N'Long Khánh', N'Sài Gòn (Cao tốc)', 120000, N'1.5 giờ', N'Ghế ngồi', '05:00', '18:00', N'Tuyến Long Khánh - Sài Gòn qua cao tốc', 1, 30),
+('2', N'Long Khánh', N'Sài Gòn (Quốc lộ)', 110000, N'2 giờ', N'Ghế ngồi', '05:00', '18:00', N'Tuyến Long Khánh - Sài Gòn qua quốc lộ', 1, 30),
+('3', N'Sài Gòn', N'Long Khánh (Cao tốc)', 120000, N'1.5 giờ', N'Ghế ngồi', '05:00', '18:00', N'Tuyến Sài Gòn - Long Khánh qua cao tốc', 1, 30),
+('4', N'Sài Gòn', N'Long Khánh (Quốc lộ)', 110000, N'2 giờ 30 phút', N'Ghế ngồi', '05:00', '18:00', N'Tuyến Sài Gòn - Long Khánh qua quốc lộ', 1, 30),
+('5', N'Sài Gòn', N'Xuân Lộc (Cao tốc)', 130000, N'2 giờ - 4 giờ', N'Ghế ngồi', '05:30', '19:00', N'Tuyến Sài Gòn - Xuân Lộc qua cao tốc', 1, 30),
+('6', N'Quốc Lộ 1A', N'Xuân Lộc (Quốc lộ)', 130000, N'1.5 giờ - 4 tiếng', N'Ghế ngồi', '05:30', '19:00', N'Tuyến Quốc Lộ 1A - Xuân Lộc', 1, 30),
+('7', N'Xuân Lộc', N'Long Khánh (Cao tốc)', 130000, N'1 giờ', N'Ghế ngồi', '05:30', '19:00', N'Tuyến Xuân Lộc - Long Khánh qua cao tốc', 1, 30),
+('8', N'Xuân Lộc', N'Long Khánh (Quốc lộ)', 130000, N'1.5 giờ', N'Ghế ngồi', '05:30', '19:00', N'Tuyến Xuân Lộc - Long Khánh qua quốc lộ', 1, 30);
 
-PRINT '===========================================';
-PRINT 'TẤT CẢ CÁC BẢNG ĐÃ ĐƯỢC TẠO THÀNH CÔNG!';
-PRINT '===========================================';
-GO
+-- Buses (Xe)
+INSERT INTO buses (id, licensePlate, busType, totalSeats, status)
+VALUES
+('bus-001', N'51B-12345', N'Ghế ngồi', 45, 'ACTIVE'),
+('bus-002', N'51B-12346', N'Ghế ngồi', 45, 'ACTIVE'),
+('bus-003', N'51B-12347', N'Ghế ngồi', 45, 'ACTIVE'),
+('bus-004', N'51B-12348', N'Giường nằm', 36, 'ACTIVE'),
+('bus-005', N'51B-12349', N'Giường nằm', 36, 'ACTIVE'),
+('bus-006', N'51B-12350', N'Limousine', 24, 'ACTIVE'),
+('bus-007', N'51B-12351', N'Limousine', 24, 'ACTIVE'),
+('bus-008', N'51B-12352', N'Ghế ngồi', 45, 'ACTIVE');
+
+-- Users mẫu (password đã hash với bcrypt)
+-- Password gốc: admin123456, staff123456, user123456
+INSERT INTO users (id, email, password, name, phone, role)
+VALUES
+('user-admin-001', 'admin@vocucphuong.com', '$2b$10$Qc5K8mJ8N.hFvK8R9O7Wl.bXvYgEjSo9h6Q3T6y5w.JmK2f5g8K2q', N'Admin VoCucPhuong', '0251999975', 'ADMIN'),
+('user-staff-001', 'staff@vocucphuong.com', '$2b$10$Qc5K8mJ8N.hFvK8R9O7Wl.bXvYgEjSo9h6Q3T6y5w.JmK2f5g8K2q', N'Nhân viên 1', '0909123456', 'STAFF'),
+('user-normal-001', 'user@example.com', '$2b$10$Qc5K8mJ8N.hFvK8R9O7Wl.bXvYgEjSo9h6Q3T6y5w.JmK2f5g8K2q', N'Khách hàng demo', '0909111222', 'USER');
+
+-- ============================================
+-- KẾT THÚC BACKUP
+-- ============================================

@@ -11,7 +11,7 @@ export async function GET(
     const { bookingCode } = await params
 
     // Lấy thông tin booking với tất cả relations
-    const booking = await BookingRepository.findByCodeWithFullDetails(bookingCode)
+    const booking = await BookingRepository.findByCodeWithDetails(bookingCode)
 
     if (!booking) {
       return NextResponse.json(
@@ -42,10 +42,9 @@ export async function GET(
         seats: booking.seats,
         totalPrice: booking.totalPrice,
 
-        // Thông tin xe
-        bus: booking.schedule?.bus ? {
-          licensePlate: booking.schedule.bus.licensePlate,
-          busType: booking.schedule.bus.busType
+        // Thông tin xe (lấy từ route busType)
+        bus: booking.route ? {
+          busType: booking.route.busType
         } : null,
 
         // Trạng thái

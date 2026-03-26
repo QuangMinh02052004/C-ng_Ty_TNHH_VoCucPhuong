@@ -107,7 +107,8 @@ export async function DELETE(
     }
 
     // Kiểm tra xem user có bookings không
-    const userWithBookings = await UserRepository.findByIdWithBookingCount(id);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userWithBookings = await UserRepository.findByIdWithBookingCount(id) as any;
 
     if (!userWithBookings) {
       return NextResponse.json(
@@ -116,7 +117,7 @@ export async function DELETE(
       )
     }
 
-    if (userWithBookings._count.bookings > 0) {
+    if (userWithBookings._count?.bookings > 0) {
       return NextResponse.json(
         { error: 'Cannot delete user with existing bookings' },
         { status: 400 }

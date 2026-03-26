@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const { bookingCode } = validation.data;
 
     // Tìm booking theo mã vé
-    const booking = await BookingRepository.findByCodeWithRouteAndUser(bookingCode);
+    const booking = await BookingRepository.findByCodeWithDetails(bookingCode) as any;
 
     if (!booking) {
       return NextResponse.json(
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Lấy lại thông tin booking với route
-    const bookingWithDetails = await BookingRepository.findByCodeWithRouteAndUser(bookingCode);
+    const bookingWithDetails = await BookingRepository.findByCodeWithDetails(bookingCode) as any;
 
     return NextResponse.json(
       {

@@ -1,0 +1,10 @@
+# Robots.txt for Nhà Xe Võ Cúc Phương
+User-agent: *
+Allow: /
+
+# Không cho crawl trang admin
+Disallow: /admin/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://vocucphuong.com/sitemap.xml

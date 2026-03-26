@@ -8,13 +8,18 @@ import { useState, useRef, useEffect } from 'react';
 export default function Header() {
     const { data: session, status } = useSession();
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const mobileMenuRef = useRef<HTMLDivElement>(null);
 
     // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setDropdownOpen(false);
+            }
+            if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+                setMobileMenuOpen(false);
             }
         };
 
@@ -31,19 +36,19 @@ export default function Header() {
             <nav className="container mx-auto px-6 py-4">
                 <div className="flex items-center justify-between">
                     {/* Logo Section */}
-                    <Link href="/" className="flex items-center space-x-3 group">
+                    <Link href="/" className="flex items-center space-x-2 sm:space-x-3 group shrink-0">
                         <Image
                             src="/logo.png"
                             alt="Logo Xe Võ Cúc Phương"
                             width={65}
                             height={65}
-                            className="rounded-lg transition-transform duration-200 group-hover:scale-105"
+                            className="rounded-lg transition-transform duration-200 group-hover:scale-105 w-10 h-10 sm:w-12 sm:h-12 lg:w-[65px] lg:h-[65px] landscape-logo"
                         />
                         <div className="flex flex-col">
-                            <span className="text-xl lg:text-2xl font-semibold text-gray-800 whitespace-nowrap">
+                            <span className="text-base sm:text-lg lg:text-2xl font-semibold text-gray-800 landscape-title">
                                 Xe Võ Cúc Phương
                             </span>
-                            <span className="text-xs text-sky-600 whitespace-nowrap hidden lg:block">
+                            <span className="text-xs text-sky-600 whitespace-nowrap hidden lg:block landscape-hidden">
                                 Uy tín - An toàn - Chuyên nghiệp
                             </span>
                         </div>
@@ -208,11 +213,171 @@ export default function Header() {
                         )}
 
                         {/* Mobile Menu Button */}
-                        <button className="md:hidden text-gray-700 hover:text-sky-600 hover:bg-sky-50 p-2.5 rounded-md transition-all">
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
+                        <div className="relative md:hidden" ref={mobileMenuRef}>
+                            <button
+                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                className="text-gray-700 hover:text-sky-600 hover:bg-sky-50 p-2.5 rounded-md transition-all"
+                            >
+                                {mobileMenuOpen ? (
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                ) : (
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                    </svg>
+                                )}
+                            </button>
+
+                            {/* Mobile Dropdown Menu */}
+                            {mobileMenuOpen && (
+                                <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                                    {/* Navigation Links */}
+                                    <div className="px-2 py-2 border-b border-gray-100">
+                                        <Link
+                                            href="/"
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
+                                        >
+                                            <span className="text-lg">🏠</span>
+                                            <span className="text-gray-700 font-medium">Trang chủ</span>
+                                        </Link>
+                                        <Link
+                                            href="/dat-ve"
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="flex items-center gap-3 px-4 py-3 rounded-lg bg-sky-50 hover:bg-sky-100 transition-colors"
+                                        >
+                                            <span className="text-lg">🎫</span>
+                                            <span className="text-sky-600 font-semibold">Đặt vé ngay</span>
+                                        </Link>
+                                        <Link
+                                            href="/tuyen-duong"
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
+                                        >
+                                            <span className="text-lg">🛤️</span>
+                                            <span className="text-gray-700 font-medium">Tuyến đường</span>
+                                        </Link>
+                                        <Link
+                                            href="/tin-tuc"
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
+                                        >
+                                            <span className="text-lg">📰</span>
+                                            <span className="text-gray-700 font-medium">Tin tức</span>
+                                        </Link>
+                                        <Link
+                                            href="/gioi-thieu"
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
+                                        >
+                                            <span className="text-lg">ℹ️</span>
+                                            <span className="text-gray-700 font-medium">Giới thiệu</span>
+                                        </Link>
+                                        <Link
+                                            href="/lien-he"
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
+                                        >
+                                            <span className="text-lg">📞</span>
+                                            <span className="text-gray-700 font-medium">Hỗ trợ</span>
+                                        </Link>
+                                    </div>
+
+                                    {/* User Section */}
+                                    <div className="px-2 py-2">
+                                        {session ? (
+                                            <>
+                                                {/* User Info */}
+                                                <div className="px-4 py-3 bg-gray-50 rounded-lg mb-2">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-sky-500 flex items-center justify-center text-white font-semibold">
+                                                            {session.user.name?.charAt(0).toUpperCase()}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-sm font-semibold text-gray-800">{session.user.name}</p>
+                                                            <p className="text-xs text-gray-500">
+                                                                {session.user.role === 'ADMIN' ? 'Quản trị' : session.user.role === 'STAFF' ? 'Nhân viên' : 'Khách hàng'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <Link
+                                                    href="/profile"
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
+                                                >
+                                                    <span className="text-lg">👤</span>
+                                                    <span className="text-gray-700 font-medium">Tài khoản của tôi</span>
+                                                </Link>
+                                                <Link
+                                                    href="/my-bookings"
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
+                                                >
+                                                    <span className="text-lg">🎫</span>
+                                                    <span className="text-gray-700 font-medium">Vé của tôi</span>
+                                                </Link>
+
+                                                {(session.user.role === 'ADMIN' || session.user.role === 'STAFF') && (
+                                                    <Link
+                                                        href="/admin"
+                                                        onClick={() => setMobileMenuOpen(false)}
+                                                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-50 transition-colors"
+                                                    >
+                                                        <span className="text-lg">⚙️</span>
+                                                        <span className="text-red-600 font-semibold">Quản trị</span>
+                                                    </Link>
+                                                )}
+
+                                                <button
+                                                    onClick={() => {
+                                                        setMobileMenuOpen(false);
+                                                        handleLogout();
+                                                    }}
+                                                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-50 transition-colors w-full text-left"
+                                                >
+                                                    <span className="text-lg">🚪</span>
+                                                    <span className="text-red-600 font-medium">Đăng xuất</span>
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <div className="flex flex-col gap-2 px-2">
+                                                <Link
+                                                    href="/auth/login"
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                    className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-sky-500 text-sky-600 font-semibold hover:bg-sky-50 transition-colors"
+                                                >
+                                                    Đăng nhập
+                                                </Link>
+                                                <Link
+                                                    href="/auth/register"
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                    className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gray-800 text-white font-semibold hover:bg-gray-900 transition-colors"
+                                                >
+                                                    Đăng ký
+                                                </Link>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Hotline */}
+                                    <div className="px-4 py-3 border-t border-gray-100 mt-2">
+                                        <a
+                                            href="tel:02519999975"
+                                            className="flex items-center gap-3 text-sky-600"
+                                        >
+                                            <span className="text-xl">📞</span>
+                                            <div>
+                                                <p className="text-xs text-gray-500">Hotline 24/7</p>
+                                                <p className="font-semibold">02519 999 975</p>
+                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </nav>
