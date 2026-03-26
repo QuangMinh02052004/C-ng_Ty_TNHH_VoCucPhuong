@@ -1,54 +1,46 @@
 import Link from 'next/link';
-import { routes } from '@/data/routes';
+import { routes as fallbackRoutes } from '@/data/routes';
 import HeroCarousel from '@/components/HeroCarousel';
 import RouteArrow from '@/components/RouteArrow';
 
-// Helper function để generate tất cả khung giờ
-function generateTimeSlots(startTime: string, endTime: string): string[] {
-  const slots: string[] = [];
-  const [startHour, startMinute] = startTime.split(':').map(Number);
-  const [endHour, endMinute] = endTime.split(':').map(Number);
+const TONGHOP_URL = process.env.TONGHOP_URL || 'https://vocucphuongmanage.vercel.app';
 
-  let currentHour = startHour;
-  let currentMinute = startMinute;
-
-  while (currentHour < endHour || (currentHour === endHour && currentMinute <= endMinute)) {
-    const timeString = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
-    slots.push(timeString);
-
-    // Tăng 30 phút
-    currentMinute += 30;
-    if (currentMinute >= 60) {
-      currentMinute = 0;
-      currentHour += 1;
-    }
+function generateTimes(start: string, end: string, interval: number): string[] {
+  const times: string[] = [];
+  const [sH, sM] = start.split(':').map(Number);
+  const [eH, eM] = end.split(':').map(Number);
+  let cur = sH * 60 + sM;
+  const endMin = eH * 60 + eM;
+  while (cur <= endMin) {
+    times.push(`${String(Math.floor(cur / 60)).padStart(2, '0')}:${String(cur % 60).padStart(2, '0')}`);
+    cur += interval;
   }
-
-  return slots;
+  return times;
 }
 
-// Helper function để lấy khung giờ theo tuyến
-function getRouteTimeSlots(routeId: string): string[] {
-  switch (routeId) {
-    case '5': // Sài Gòn → Xuân Lộc (Cao tốc)
-      return generateTimeSlots('05:30', '18:30');
-    case '3': // Sài Gòn → Long Khánh (Cao tốc)
-    case '4': // Sài Gòn → Long Khánh (Quốc lộ)
-      return generateTimeSlots('05:30', '20:00');
-    case '6': // Sài Gòn → Xuân Lộc (Quốc lộ)
-      return generateTimeSlots('05:30', '17:00');
-    case '7': // Xuân Lộc → Sài Gòn (Cao tốc)
-    case '8': // Xuân Lộc → Sài Gòn (Quốc lộ)
-      return generateTimeSlots('03:30', '17:00');
-    case '1': // Long Khánh → Sài Gòn (Cao tốc)
-    case '2': // Long Khánh → Sài Gòn (Quốc lộ)
-      return generateTimeSlots('03:30', '18:00');
-    default:
-      return generateTimeSlots('05:30', '20:00');
+async function getRoutes() {
+  try {
+    const res = await fetch(`${TONGHOP_URL}/api/tong-hop/routes`, { next: { revalidate: 60 } });
+    if (!res.ok) throw new Error('fetch failed');
+    const data = await res.json();
+    return data.filter((r: any) => r.isActive).map((r: any, i: number) => ({
+      id: String(r.id || i + 1),
+      from: r.fromStation || '',
+      to: `${r.toStation || ''} (${r.routeType === 'cao_toc' ? 'Cao tốc' : 'Quốc lộ'})`,
+      price: parseFloat(r.price) || 0,
+      duration: r.duration || '',
+      departureTime: generateTimes(r.operatingStart || '05:30', r.operatingEnd || '20:00', r.intervalMinutes || 30),
+      availableSeats: r.seats || 28,
+      busType: r.busType || 'Ghế ngồi',
+      distance: parseInt(r.distance) || 80,
+    }));
+  } catch {
+    return fallbackRoutes;
   }
 }
 
-export default function Home() {
+export default async function Home() {
+  const routes = await getRoutes();
   return (
     <div>
       <HeroCarousel />
@@ -168,19 +160,19 @@ export default function Home() {
                       <div className="text-center">
                         <p className="text-xs text-gray-600 mb-1">Giờ đầu</p>
                         <p className="text-2xl font-bold text-sky-600">
-                          {getRouteTimeSlots(route.id)[0]}
+                          {route.departureTime[0]}
                         </p>
                       </div>
                       <div className="text-2xl text-sky-400">→</div>
                       <div className="text-center">
                         <p className="text-xs text-gray-600 mb-1">Giờ cuối</p>
                         <p className="text-2xl font-bold text-sky-600">
-                          {getRouteTimeSlots(route.id)[getRouteTimeSlots(route.id).length - 1]}
+                          {route.departureTime[route.departureTime.length - 1]}
                         </p>
                       </div>
                     </div>
                     <p className="text-center text-xs text-gray-600 mt-3">
-                      Chuyến mới mỗi 30 phút ({getRouteTimeSlots(route.id).length} chuyến/ngày)
+                      Chuyến mới mỗi 30 phút ({route.departureTime.length} chuyến/ngày)
                     </p>
                   </div>
 

@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { routes } from '@/data/routes';
+import { routes as fallbackRoutes } from '@/data/routes';
+import { Route } from '@/types';
 
 function DatVeContent() {
     const searchParams = useSearchParams();
@@ -22,9 +23,18 @@ function DatVeContent() {
         seats: 1,
     });
 
-    const [selectedRoute, setSelectedRoute] = useState<typeof routes[0] | null>(null);
+    const [routes, setRoutes] = useState<Route[]>(fallbackRoutes);
+    const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Load routes from API
+    useEffect(() => {
+        fetch('/api/routes')
+            .then(res => res.json())
+            .then(data => { if (Array.isArray(data) && data.length > 0) setRoutes(data); })
+            .catch(() => { /* fallback already set */ });
+    }, []);
 
     // Tự động điền tuyến đường và khung giờ khi có route và time trong URL
     useEffect(() => {
@@ -39,7 +49,7 @@ function DatVeContent() {
                 }));
             }
         }
-    }, [routeIdFromUrl, timeFromUrl]);
+    }, [routeIdFromUrl, timeFromUrl, routes]);
 
     // Tự động điền thông tin khách hàng khi đã đăng nhập
     useEffect(() => {
@@ -53,79 +63,10 @@ function DatVeContent() {
         }
     }, [session]);
 
-    // Lấy danh sách khung giờ theo tuyến đường
+    // Lấy danh sách khung giờ từ route data (API)
     const getTimeSlots = () => {
         if (!selectedRoute) return [];
-
-        const routeId = selectedRoute.id;
-        let startHour = 5;
-        let startMinute = 30;
-        let endHour = 20;
-        let endMinute = 0;
-
-        // Cấu hình khung giờ theo từng tuyến
-        switch (routeId) {
-            case '5': // Sài Gòn → Xuân Lộc (Cao tốc): 5h30 - 18h30
-                startHour = 5;
-                startMinute = 30;
-                endHour = 18;
-                endMinute = 30;
-                break;
-            case '3': // Sài Gòn → Long Khánh (Cao tốc): 5h30 - 20h
-            case '4': // Sài Gòn → Long Khánh (Quốc lộ): 5h30 - 20h
-                startHour = 5;
-                startMinute = 30;
-                endHour = 20;
-                endMinute = 0;
-                break;
-            case '6': // Sài Gòn → Xuân Lộc (Quốc lộ): 5h30 - 17h
-                startHour = 5;
-                startMinute = 30;
-                endHour = 17;
-                endMinute = 0;
-                break;
-            case '7': // Xuân Lộc → Sài Gòn (Cao tốc): 3h30 - 17h
-            case '8': // Xuân Lộc → Sài Gòn (Quốc lộ): 3h30 - 17h
-                startHour = 3;
-                startMinute = 30;
-                endHour = 17;
-                endMinute = 0;
-                break;
-            case '1': // Long Khánh → Sài Gòn (Cao tốc): 3h30 - 18h
-            case '2': // Long Khánh → Sài Gòn (Quốc lộ): 3h30 - 18h
-                startHour = 3;
-                startMinute = 30;
-                endHour = 18;
-                endMinute = 0;
-                break;
-            default:
-                startHour = 5;
-                startMinute = 30;
-                endHour = 20;
-                endMinute = 0;
-        }
-
-        // Tạo danh sách khung giờ (mỗi 30 phút)
-        const timeSlots: string[] = [];
-        let currentHour = startHour;
-        let currentMinute = startMinute;
-
-        while (
-            currentHour < endHour ||
-            (currentHour === endHour && currentMinute <= endMinute)
-        ) {
-            const timeString = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
-            timeSlots.push(timeString);
-
-            // Tăng 30 phút
-            currentMinute += 30;
-            if (currentMinute >= 60) {
-                currentMinute = 0;
-                currentHour += 1;
-            }
-        }
-
-        return timeSlots;
+        return selectedRoute.departureTime || [];
     };
 
     const handleRouteChange = (routeId: string) => {

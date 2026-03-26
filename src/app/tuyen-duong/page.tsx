@@ -1,57 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { routes } from '@/data/routes';
-import { useState } from 'react';
-
-
-// Helper function để generate tất cả khung giờ
-function generateTimeSlots(startTime: string, endTime: string): string[] {
-    const slots: string[] = [];
-    const [startHour, startMinute] = startTime.split(':').map(Number);
-    const [endHour, endMinute] = endTime.split(':').map(Number);
-
-    let currentHour = startHour;
-    let currentMinute = startMinute;
-
-    while (currentHour < endHour || (currentHour === endHour && currentMinute <= endMinute)) {
-        const timeString = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
-        slots.push(timeString);
-
-        // Tăng 30 phút
-        currentMinute += 30;
-        if (currentMinute >= 60) {
-            currentMinute = 0;
-            currentHour += 1;
-        }
-    }
-
-    return slots;
-}
-
-// Helper function để lấy khung giờ theo tuyến
-function getRouteTimeSlots(routeId: string): string[] {
-    switch (routeId) {
-        case '5': // Sài Gòn → Xuân Lộc (Cao tốc)
-            return generateTimeSlots('05:30', '18:30');
-        case '3': // Sài Gòn → Long Khánh (Cao tốc)
-        case '4': // Sài Gòn → Long Khánh (Quốc lộ)
-            return generateTimeSlots('05:30', '20:00');
-        case '6': // Sài Gòn → Xuân Lộc (Quốc lộ)
-            return generateTimeSlots('05:30', '17:00');
-        case '7': // Xuân Lộc → Sài Gòn (Cao tốc)
-        case '8': // Xuân Lộc → Sài Gòn (Quốc lộ)
-            return generateTimeSlots('03:30', '17:00');
-        case '1': // Long Khánh → Sài Gòn (Cao tốc)
-        case '2': // Long Khánh → Sài Gòn (Quốc lộ)
-            return generateTimeSlots('03:30', '18:00');
-        default:
-            return generateTimeSlots('05:30', '20:00');
-    }
-}
+import { routes as fallbackRoutes } from '@/data/routes';
+import { useState, useEffect } from 'react';
+import { Route } from '@/types';
 
 export default function TuyenDuongPage() {
+    const [routes, setRoutes] = useState<Route[]>(fallbackRoutes);
     const [selectedTimes, setSelectedTimes] = useState<{ [key: string]: string }>({});
+
+    // Load routes from API (TongHop)
+    useEffect(() => {
+        fetch('/api/routes')
+            .then(res => res.json())
+            .then(data => { if (Array.isArray(data) && data.length > 0) setRoutes(data); })
+            .catch(() => { /* fallback already set */ });
+    }, []);
 
     const handleTimeSelect = (routeId: string, time: string) => {
         setSelectedTimes(prev => ({
@@ -136,7 +100,7 @@ export default function TuyenDuongPage() {
                                 <div className="bg-gradient-to-br from-sky-50 to-blue-50 rounded-lg p-4 mb-4 border border-sky-100">
                                     <p className="text-sm font-medium text-gray-700 mb-3">Chọn giờ xuất bến:</p>
                                     <div className="grid grid-cols-4 gap-2 max-h-32 overflow-y-auto">
-                                        {getRouteTimeSlots(route.id).map((time, idx) => (
+                                        {route.departureTime.map((time, idx) => (
                                             <button
                                                 key={idx}
                                                 onClick={() => handleTimeSelect(route.id, time)}
@@ -150,7 +114,7 @@ export default function TuyenDuongPage() {
                                         ))}
                                     </div>
                                     <p className="text-center text-xs text-gray-600 mt-3">
-                                        Chuyến mới mỗi 30 phút ({getRouteTimeSlots(route.id).length} chuyến/ngày)
+                                        Chuyến mới mỗi 30 phút ({route.departureTime.length} chuyến/ngày)
                                     </p>
                                 </div>
 
