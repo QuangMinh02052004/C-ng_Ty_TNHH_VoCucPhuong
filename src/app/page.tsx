@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { routes as fallbackRoutes } from '@/data/routes';
+import { Route } from '@/types';
 import HeroCarousel from '@/components/HeroCarousel';
 import RouteArrow from '@/components/RouteArrow';
 
@@ -18,7 +19,7 @@ function generateTimes(start: string, end: string, interval: number): string[] {
   return times;
 }
 
-async function getRoutes() {
+async function getRoutes(): Promise<Route[]> {
   try {
     const res = await fetch(`${TONGHOP_URL}/api/tong-hop/routes`, { next: { revalidate: 60 } });
     if (!res.ok) throw new Error('fetch failed');
