@@ -12,6 +12,30 @@ import { generateTicketQRCode, generatePaymentQRCode } from '@/services/qrcode.s
 // ===========================================
 // POST /api/bookings/create
 
+const TONGHOP_URL = process.env.TONGHOP_URL || 'https://vocucphuongmanage.vercel.app';
+
+// Fetch route from TongHop API by ID
+async function fetchRouteFromTongHop(routeId: string) {
+    try {
+        const res = await fetch(`${TONGHOP_URL}/api/tong-hop/routes`);
+        if (!res.ok) return null;
+        const routes = await res.json();
+        const r = routes.find((route: any) => String(route.id) === routeId);
+        if (!r || !r.isActive) return null;
+        return {
+            id: String(r.id),
+            from: r.fromStation || '',
+            to: `${r.toStation || ''} (${r.routeType === 'cao_toc' ? 'Cao tốc' : 'Quốc lộ'})`,
+            price: parseFloat(r.price) || 0,
+            duration: r.duration || '',
+            busType: r.busType || 'Ghế ngồi',
+            isActive: true,
+        };
+    } catch {
+        return null;
+    }
+}
+
 // Validation schema
 const createBookingSchema = z.object({
     routeId: z.string().min(1, 'Route ID is required'),
@@ -50,8 +74,17 @@ export async function POST(request: NextRequest) {
 
         const data = validation.data;
 
-        // 1. Get route information
-        const route = await RouteRepository.findById(data.routeId);
+        // 1. Get route information (try local DB first, then TongHop API)
+        let route = await RouteRepository.findById(data.routeId);
+
+        if (!route) {
+            console.log('⚠️ [API] Route not found in local DB, fetching from TongHop...');
+            const tongHopRoute = await fetchRouteFromTongHop(data.routeId);
+            if (tongHopRoute) {
+                route = tongHopRoute as any;
+                console.log('✅ [API] Route found in TongHop:', tongHopRoute.from, '→', tongHopRoute.to);
+            }
+        }
 
         if (!route) {
             return NextResponse.json(
