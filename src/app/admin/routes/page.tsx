@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
-import RouteMapVisualization from '@/components/admin/RouteMapVisualization'
 
 interface Route {
   id: string
@@ -265,109 +264,55 @@ export default function RoutesManagement() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Quản lý tuyến đường</h1>
-          <p className="text-gray-600 mt-2">Quản lý các tuyến xe và lộ trình hình ảnh mô phỏng</p>
-        </div>
+      <div className="flex justify-between items-center">
+        <h1 className="text-xl font-semibold text-gray-900">Quản lý tuyến đường</h1>
         <button
           onClick={openCreateModal}
-          className="px-6 py-3 bg-gradient-to-r from-blue-600 to-sky-600 text-white rounded-xl hover:from-blue-700 hover:to-sky-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+          className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Thêm tuyến đường
+          Thêm tuyến
         </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-sm border border-blue-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-blue-700 font-medium">Tổng tuyến</p>
-              <p className="text-4xl font-bold text-blue-900 mt-2">{stats.total}</p>
-              <p className="text-xs text-blue-600 mt-1">Tất cả tuyến đường</p>
-            </div>
-            <div className="w-14 h-14 bg-blue-200 rounded-xl flex items-center justify-center">
-              <svg className="w-7 h-7 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-              </svg>
-            </div>
-          </div>
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-white border border-gray-200 rounded p-3">
+          <p className="text-xs text-gray-500">Tổng tuyến</p>
+          <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.total}</p>
         </div>
-
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-sm border border-green-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-green-700 font-medium">Hoạt động</p>
-              <p className="text-4xl font-bold text-green-900 mt-2">{stats.active}</p>
-              <p className="text-xs text-green-600 mt-1">Đang phục vụ</p>
-            </div>
-            <div className="w-14 h-14 bg-green-200 rounded-xl flex items-center justify-center">
-              <svg className="w-7 h-7 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
+        <div className="bg-white border border-gray-200 rounded p-3">
+          <p className="text-xs text-gray-500">Hoạt động</p>
+          <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.active}</p>
         </div>
-
-        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl shadow-sm border border-red-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-red-700 font-medium">Tạm ngừng</p>
-              <p className="text-4xl font-bold text-red-900 mt-2">{stats.inactive}</p>
-              <p className="text-xs text-red-600 mt-1">Không hoạt động</p>
-            </div>
-            <div className="w-14 h-14 bg-red-200 rounded-xl flex items-center justify-center">
-              <svg className="w-7 h-7 text-red-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
+        <div className="bg-white border border-gray-200 rounded p-3">
+          <p className="text-xs text-gray-500">Tạm ngừng</p>
+          <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.inactive}</p>
         </div>
-
-        <div className="bg-gradient-to-br from-sky-50 to-sky-100 rounded-xl shadow-sm border border-sky-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-sky-700 font-medium">Vé đã bán</p>
-              <p className="text-4xl font-bold text-sky-900 mt-2">{stats.totalBookings}</p>
-              <p className="text-xs text-sky-600 mt-1">Tổng số vé</p>
-            </div>
-            <div className="w-14 h-14 bg-sky-200 rounded-xl flex items-center justify-center">
-              <svg className="w-7 h-7 text-sky-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
-              </svg>
-            </div>
-          </div>
+        <div className="bg-white border border-gray-200 rounded p-3">
+          <p className="text-xs text-gray-500">Vé đã bán</p>
+          <p className="text-2xl font-semibold text-gray-900 mt-1">{stats.totalBookings}</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="bg-white border border-gray-200 rounded p-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              🔍 Tìm kiếm
-            </label>
+            <label className="block text-xs text-gray-600 mb-1">Tìm kiếm</label>
             <input
               type="text"
-              placeholder="Tìm theo điểm đi, điểm đến, loại xe..."
+              placeholder="Điểm đi, điểm đến, loại xe..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500"
             />
           </div>
-
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              🎯 Trạng thái
-            </label>
+            <label className="block text-xs text-gray-600 mb-1">Trạng thái</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+              className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500"
             >
               <option value="ALL">Tất cả</option>
               <option value="ACTIVE">Đang hoạt động</option>
@@ -377,387 +322,233 @@ export default function RoutesManagement() {
         </div>
       </div>
 
-      {/* Routes Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredRoutes.map((route) => (
-          <div key={route.id} className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-xl transition-shadow">
-            {/* Map Visualization */}
-            <RouteMapVisualization
-              routeMapImage={route.routeMapImage || undefined}
-              thumbnailImage={route.thumbnailImage || undefined}
-              from={route.from}
-              to={route.to}
-              distance={route.distance || undefined}
-              duration={route.duration}
-            />
-
-            {/* Route Details */}
-            <div className="p-6 space-y-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-2xl font-bold text-blue-600">
-                      {route.price.toLocaleString('vi-VN')} ₫
-                    </h3>
-                    {route.isActive ? (
-                      <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full border border-green-300">
-                        ● Hoạt động
-                      </span>
-                    ) : (
-                      <span className="px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full border border-red-300">
-                        ● Tạm ngừng
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-gray-600 flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                    {route.busType}
-                  </p>
-                </div>
-              </div>
-
-              {route.description && (
-                <p className="text-sm text-gray-600 line-clamp-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                  {route.description}
-                </p>
-              )}
-
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
-                <div className="bg-blue-50 p-3 rounded-lg">
-                  <p className="text-xs text-blue-600 font-semibold">Giờ hoạt động</p>
-                  <p className="font-bold text-blue-900 text-sm mt-1">{route.operatingStart} - {route.operatingEnd}</p>
-                </div>
-                <div className="bg-sky-50 p-3 rounded-lg">
-                  <p className="text-xs text-sky-600 font-semibold">Khoảng cách chuyến</p>
-                  <p className="font-bold text-sky-900 text-sm mt-1">{route.intervalMinutes} phút</p>
-                </div>
-                <div className="bg-green-50 p-3 rounded-lg">
-                  <p className="text-xs text-green-600 font-semibold">Số vé đã đặt</p>
-                  <p className="font-bold text-green-900 text-sm mt-1">{route._count?.bookings || 0} vé</p>
-                </div>
-                <div className="bg-purple-50 p-3 rounded-lg">
-                  <p className="text-xs text-purple-600 font-semibold">Lịch trình</p>
-                  <p className="font-bold text-purple-900 text-sm mt-1">{route._count?.schedules || 0} chuyến</p>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="flex gap-2 pt-4">
-                <button
-                  onClick={() => openEditModal(route)}
-                  className="flex-1 px-4 py-2.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-semibold flex items-center justify-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Sửa
-                </button>
-                <button
-                  onClick={() => toggleStatus(route)}
-                  className={`flex-1 px-4 py-2.5 rounded-lg transition-colors font-semibold flex items-center justify-center gap-2 ${
-                    route.isActive
-                      ? 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
-                      : 'bg-green-50 text-green-700 hover:bg-green-100'
-                  }`}
-                >
-                  {route.isActive ? (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Tạm ngừng
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Kích hoạt
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={() => handleDelete(route.id)}
-                  className="px-4 py-2.5 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition-colors font-semibold flex items-center justify-center gap-2"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                  Xóa
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
+      {/* Routes List */}
+      <div className="bg-white border border-gray-200 rounded">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-gray-50 border-b border-gray-200 text-gray-600">
+              <th className="text-left px-3 py-2 font-medium">Tuyến</th>
+              <th className="text-left px-3 py-2 font-medium">Loại xe</th>
+              <th className="text-right px-3 py-2 font-medium">Giá</th>
+              <th className="text-left px-3 py-2 font-medium">Thời gian</th>
+              <th className="text-left px-3 py-2 font-medium">Giờ chạy</th>
+              <th className="text-center px-3 py-2 font-medium">Vé / Lịch</th>
+              <th className="text-center px-3 py-2 font-medium">Trạng thái</th>
+              <th className="text-right px-3 py-2 font-medium">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredRoutes.map((route) => (
+              <tr key={route.id} className="border-b border-gray-100">
+                <td className="px-3 py-2 text-gray-900 font-medium">{route.from} → {route.to}</td>
+                <td className="px-3 py-2 text-gray-700">{route.busType}</td>
+                <td className="px-3 py-2 text-right text-gray-900">{route.price.toLocaleString('vi-VN')}₫</td>
+                <td className="px-3 py-2 text-gray-700">{route.duration}</td>
+                <td className="px-3 py-2 text-gray-700">{route.operatingStart}–{route.operatingEnd} ({route.intervalMinutes}p)</td>
+                <td className="px-3 py-2 text-center text-gray-700">{route._count?.bookings || 0} / {route._count?.schedules || 0}</td>
+                <td className="px-3 py-2 text-center">
+                  <span className={route.isActive ? 'text-green-700' : 'text-gray-500'}>
+                    {route.isActive ? 'Hoạt động' : 'Tạm ngừng'}
+                  </span>
+                </td>
+                <td className="px-3 py-2 text-right whitespace-nowrap">
+                  <button onClick={() => openEditModal(route)} className="px-2 py-1 text-blue-700 border border-blue-200 rounded mr-1 hover:bg-blue-50">Sửa</button>
+                  <button onClick={() => toggleStatus(route)} className="px-2 py-1 text-gray-700 border border-gray-200 rounded mr-1 hover:bg-gray-50">{route.isActive ? 'Tắt' : 'Bật'}</button>
+                  <button onClick={() => handleDelete(route.id)} className="px-2 py-1 text-red-700 border border-red-200 rounded hover:bg-red-50">Xóa</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       {filteredRoutes.length === 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-16 text-center">
-          <svg className="mx-auto h-20 w-20 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-          </svg>
-          <p className="mt-6 text-gray-500 text-lg font-medium">Không tìm thấy tuyến đường nào</p>
-          <p className="text-gray-400 text-sm mt-2">Thử thay đổi bộ lọc hoặc thêm tuyến đường mới</p>
+        <div className="bg-white border border-gray-200 p-8 text-center text-gray-500">
+          Không tìm thấy tuyến đường nào
         </div>
       )}
 
       {/* Create/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 overflow-y-auto p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-sky-600 text-white p-6 rounded-t-2xl">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-2xl font-bold">
-                    {isEditing ? '✏️ Chỉnh sửa tuyến đường' : '➕ Thêm tuyến đường mới'}
-                  </h3>
-                  <p className="text-blue-100 text-sm mt-1">
-                    {isEditing ? 'Cập nhật thông tin tuyến đường' : 'Điền thông tin để tạo tuyến mới'}
-                  </p>
-                </div>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 overflow-y-auto p-4">
+          <div className="bg-white border border-gray-200 rounded shadow max-w-3xl w-full my-8 max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-gray-900">
+                {isEditing ? 'Chỉnh sửa tuyến đường' : 'Thêm tuyến đường'}
+              </h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-lg leading-none"
+              >
+                ×
+              </button>
             </div>
 
-            <div className="p-6 space-y-6">
-              {/* Thông tin cơ bản */}
+            <div className="p-4 space-y-5">
               <div>
-                <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">📍</span>
-                  Thông tin cơ bản
-                </h4>
-                <div className="grid grid-cols-2 gap-4">
+                <h4 className="text-sm font-semibold text-gray-800 mb-2 pb-1 border-b border-gray-100">Thông tin cơ bản</h4>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Điểm đi *
-                    </label>
+                    <label className="block text-xs text-gray-600 mb-1">Điểm đi *</label>
                     <input
                       type="text"
                       value={formData.from}
                       onChange={(e) => setFormData({ ...formData, from: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                       placeholder="VD: Hà Nội"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Điểm đến *
-                    </label>
+                    <label className="block text-xs text-gray-600 mb-1">Điểm đến *</label>
                     <input
                       type="text"
                       value={formData.to}
                       onChange={(e) => setFormData({ ...formData, to: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                       placeholder="VD: Cúc Phương"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Giá vé (VNĐ) *
-                    </label>
+                    <label className="block text-xs text-gray-600 mb-1">Giá vé (VNĐ) *</label>
                     <input
                       type="number"
                       value={formData.price}
                       onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                       placeholder="VD: 150000"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Thời gian *
-                    </label>
+                    <label className="block text-xs text-gray-600 mb-1">Thời gian *</label>
                     <input
                       type="text"
                       value={formData.duration}
                       onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                       placeholder="VD: 2h 30p"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Loại xe *
-                    </label>
+                    <label className="block text-xs text-gray-600 mb-1">Loại xe *</label>
                     <input
                       type="text"
                       value={formData.busType}
                       onChange={(e) => setFormData({ ...formData, busType: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                       placeholder="VD: Limousine 16 chỗ"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Khoảng cách
-                    </label>
+                    <label className="block text-xs text-gray-600 mb-1">Khoảng cách</label>
                     <input
                       type="text"
                       value={formData.distance}
                       onChange={(e) => setFormData({ ...formData, distance: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                       placeholder="VD: 120km"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Hình ảnh lộ trình */}
               <div>
-                <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 bg-sky-100 rounded-lg flex items-center justify-center text-sky-600">🖼️</span>
-                  Hình ảnh lộ trình
-                </h4>
-                <div className="space-y-4">
+                <h4 className="text-sm font-semibold text-gray-800 mb-2 pb-1 border-b border-gray-100">Hình ảnh lộ trình</h4>
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      URL Hình ảnh bản đồ lộ trình
-                    </label>
+                    <label className="block text-xs text-gray-600 mb-1">URL bản đồ lộ trình</label>
                     <input
                       type="text"
                       value={formData.routeMapImage}
                       onChange={(e) => setFormData({ ...formData, routeMapImage: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                       placeholder="https://example.com/route-map.jpg"
                     />
-                    <p className="text-xs text-gray-500 mt-2">
-                      💡 Nhập URL hình ảnh mô phỏng lộ trình (Google Maps screenshot, bản đồ tự vẽ, v.v.)
-                    </p>
                   </div>
-
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      URL Hình ảnh thu nhỏ (Thumbnail)
-                    </label>
+                    <label className="block text-xs text-gray-600 mb-1">URL ảnh thu nhỏ</label>
                     <input
                       type="text"
                       value={formData.thumbnailImage}
                       onChange={(e) => setFormData({ ...formData, thumbnailImage: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                       placeholder="https://example.com/thumbnail.jpg"
                     />
                   </div>
-
-                  {/* Preview */}
-                  {formData.routeMapImage && (
-                    <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200">
-                      <p className="text-sm font-semibold text-gray-700 mb-2">Xem trước:</p>
-                      <RouteMapVisualization
-                        routeMapImage={formData.routeMapImage}
-                        thumbnailImage={formData.thumbnailImage}
-                        from={formData.from || 'Điểm đi'}
-                        to={formData.to || 'Điểm đến'}
-                        distance={formData.distance}
-                        duration={formData.duration || '0h 0p'}
-                      />
-                    </div>
-                  )}
                 </div>
               </div>
 
-              {/* Giờ hoạt động */}
               <div>
-                <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600">⏰</span>
-                  Giờ hoạt động
-                </h4>
-                <div className="grid grid-cols-3 gap-4">
+                <h4 className="text-sm font-semibold text-gray-800 mb-2 pb-1 border-b border-gray-100">Giờ hoạt động</h4>
+                <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Giờ bắt đầu *
-                    </label>
+                    <label className="block text-xs text-gray-600 mb-1">Bắt đầu *</label>
                     <input
                       type="time"
                       value={formData.operatingStart}
                       onChange={(e) => setFormData({ ...formData, operatingStart: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Giờ kết thúc *
-                    </label>
+                    <label className="block text-xs text-gray-600 mb-1">Kết thúc *</label>
                     <input
                       type="time"
                       value={formData.operatingEnd}
                       onChange={(e) => setFormData({ ...formData, operatingEnd: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Khoảng cách (phút) *
-                    </label>
+                    <label className="block text-xs text-gray-600 mb-1">Cách nhau (phút) *</label>
                     <input
                       type="number"
                       value={formData.intervalMinutes}
                       onChange={(e) => setFormData({ ...formData, intervalMinutes: e.target.value })}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500"
                       placeholder="VD: 30"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Mô tả */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Mô tả
-                </label>
+                <label className="block text-xs text-gray-600 mb-1">Mô tả</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   rows={3}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Mô tả chi tiết về tuyến đường, các điểm dừng, tiện nghi..."
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:border-blue-500"
+                  placeholder="Các điểm dừng, tiện nghi..."
                 />
               </div>
 
-              {/* Trạng thái */}
-              <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+              <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
                   id="isActive"
                   checked={formData.isActive}
                   onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                  className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  className="w-4 h-4"
                 />
-                <label htmlFor="isActive" className="text-sm font-semibold text-gray-700 cursor-pointer">
-                  ✅ Tuyến đường đang hoạt động
+                <label htmlFor="isActive" className="text-sm text-gray-700 cursor-pointer">
+                  Tuyến đang hoạt động
                 </label>
               </div>
             </div>
 
-            <div className="sticky bottom-0 p-6 border-t border-gray-200 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
+            <div className="sticky bottom-0 p-3 border-t border-gray-200 bg-white flex justify-end gap-2">
               <button
                 onClick={() => setShowModal(false)}
-                className="px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors font-semibold"
+                className="px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-50"
               >
-                Hủy bỏ
+                Hủy
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={uploading}
-                className="px-6 py-3 text-white bg-gradient-to-r from-blue-600 to-sky-600 rounded-xl hover:from-blue-700 hover:to-sky-700 transition-all shadow-lg hover:shadow-xl font-semibold disabled:opacity-50"
+                className="px-3 py-1.5 text-sm text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50"
               >
-                {uploading ? 'Đang xử lý...' : (isEditing ? '💾 Cập nhật' : '➕ Tạo mới')}
+                {uploading ? 'Đang xử lý...' : (isEditing ? 'Cập nhật' : 'Tạo mới')}
               </button>
             </div>
           </div>
