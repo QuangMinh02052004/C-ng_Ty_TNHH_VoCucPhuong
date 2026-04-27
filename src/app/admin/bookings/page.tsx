@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
@@ -42,6 +42,11 @@ export default function AdminBookingsPage() {
   const [checkinLoading, setCheckinLoading] = useState(false);
   const [checkinError, setCheckinError] = useState<string | null>(null);
   const [checkinSuccess, setCheckinSuccess] = useState<any | null>(null);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const scanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   // Redirect if not admin/staff
   useEffect(() => {
@@ -114,6 +119,74 @@ export default function AdminBookingsPage() {
     } finally {
       setCheckinLoading(false);
     }
+  };
+
+  const stopCamera = useCallback(() => {
+    if (scanIntervalRef.current) { clearInterval(scanIntervalRef.current); scanIntervalRef.current = null; }
+    if (streamRef.current) { streamRef.current.getTracks().forEach(t => t.stop()); streamRef.current = null; }
+    if (videoRef.current) { videoRef.current.srcObject = null; }
+    setCameraActive(false);
+  }, []);
+
+  // Gán stream vào video element SAU khi DOM đã render (cameraActive=true)
+  useEffect(() => {
+    if (cameraActive && streamRef.current && videoRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch(() => {});
+
+      if (!('BarcodeDetector' in window)) return;
+      const detector = new (window as any).BarcodeDetector({ formats: ['qr_code'] });
+      scanIntervalRef.current = setInterval(async () => {
+        if (!videoRef.current || videoRef.current.readyState < 2) return;
+        try {
+          const barcodes = await detector.detect(videoRef.current);
+          if (barcodes.length > 0) {
+            const raw = barcodes[0].rawValue.trim();
+            // Extract booking code nếu QR chứa URL (/ve/VCP...) hoặc dùng thẳng
+            const urlMatch = raw.match(/\/ve\/(VCP[A-Z0-9]+)/i);
+            const code = urlMatch ? urlMatch[1] : raw;
+            stopCamera();
+            setCheckinCode(code);
+            handleCheckin(code);
+          }
+        } catch {}
+      }, 600);
+    }
+    return () => {
+      if (scanIntervalRef.current && !cameraActive) {
+        clearInterval(scanIntervalRef.current);
+        scanIntervalRef.current = null;
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cameraActive]);
+
+  const startCamera = async () => {
+    setCameraError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+      });
+      streamRef.current = stream;
+      setCameraActive(true); // trigger useEffect to attach stream after render
+    } catch (err: any) {
+      if (err.name === 'NotAllowedError') {
+        setCameraError('Vui lòng cấp quyền truy cập camera trong cài đặt trình duyệt.');
+      } else if (err.name === 'NotFoundError') {
+        setCameraError('Không tìm thấy camera trên thiết bị này.');
+      } else {
+        setCameraError('Không thể mở camera: ' + (err.message || err.name));
+      }
+    }
+  };
+
+  const closeCheckinModal = () => {
+    stopCamera();
+    setShowCheckinModal(false);
+    setCheckinCode('');
+    setCheckinError(null);
+    setCheckinSuccess(null);
+    setCameraError(null);
   };
 
   const filteredBookings = bookings.filter((booking) => {
@@ -218,7 +291,7 @@ export default function AdminBookingsPage() {
         {/* Check-in Button */}
         <div className="mb-6">
           <button
-            onClick={() => setShowCheckinModal(true)}
+            onClick={() => { setCheckinSuccess(null); setCheckinError(null); setCheckinCode(''); setShowCheckinModal(true); }}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
           >
             📱 Quét mã QR / Check-in vé
@@ -408,80 +481,133 @@ export default function AdminBookingsPage() {
 
       {/* Check-in Modal */}
       {showCheckinModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
-            <h2 className="text-2xl font-bold mb-4">Check-in vé</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-xl font-bold text-gray-900">Check-in vé</h2>
+              <button onClick={closeCheckinModal} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600">✕</button>
+            </div>
 
             {checkinSuccess ? (
               <div className="space-y-4">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p className="text-green-800 font-medium">✓ {checkinSuccess.message}</p>
+                <div className="bg-green-50 border-2 border-green-400 rounded-xl p-5 text-center">
+                  <div className="text-4xl mb-2">✅</div>
+                  <p className="text-green-800 font-bold text-lg">{checkinSuccess.message}</p>
                 </div>
-                <div className="space-y-2 text-sm">
-                  <p><strong>Mã vé:</strong> {checkinSuccess.booking.bookingCode}</p>
-                  <p><strong>Khách hàng:</strong> {checkinSuccess.booking.customerName}</p>
-                  <p><strong>Số điện thoại:</strong> {checkinSuccess.booking.customerPhone}</p>
-                  <p><strong>Tuyến:</strong> {checkinSuccess.booking.route}</p>
-                  <p><strong>Ngày đi:</strong> {formatDate(checkinSuccess.booking.date)} - {checkinSuccess.booking.departureTime}</p>
-                  <p><strong>Số ghế:</strong> {checkinSuccess.booking.seats}</p>
-                  <p><strong>Tổng tiền:</strong> {formatPrice(checkinSuccess.booking.totalPrice)}</p>
+                <div className="bg-gray-50 rounded-xl p-4 space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Mã vé</span>
+                    <span className="font-bold font-mono">{checkinSuccess.booking.bookingCode}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Khách hàng</span>
+                    <span className="font-semibold">{checkinSuccess.booking.customerName}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Điện thoại</span>
+                    <span className="font-semibold">{checkinSuccess.booking.customerPhone}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Tuyến</span>
+                    <span className="font-semibold text-right">{checkinSuccess.booking.route}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Ngày — Giờ</span>
+                    <span className="font-semibold">{formatDate(checkinSuccess.booking.date)} {checkinSuccess.booking.departureTime}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-gray-200">
+                    <span className="text-gray-500">Tổng tiền</span>
+                    <span className="font-bold text-green-600">{formatPrice(checkinSuccess.booking.totalPrice)}</span>
+                  </div>
                 </div>
                 <button
-                  onClick={() => {
-                    setShowCheckinModal(false);
-                    setCheckinSuccess(null);
-                    setCheckinCode('');
-                  }}
-                  className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                  onClick={() => { setCheckinSuccess(null); setCheckinCode(''); }}
+                  className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 font-semibold"
                 >
-                  Đóng
+                  Check-in tiếp
                 </button>
               </div>
             ) : (
               <div className="space-y-4">
+                {/* Camera view — video always mounted so ref is ready */}
+                <div className={`relative rounded-xl overflow-hidden bg-black ${cameraActive ? 'block' : 'hidden'}`}>
+                  <video ref={videoRef} className="w-full h-56 object-cover" muted playsInline autoPlay />
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-44 h-44 border-2 border-white rounded-xl opacity-70">
+                      <div className="absolute top-0 left-0 w-5 h-5 border-t-4 border-l-4 border-green-400 rounded-tl-lg" />
+                      <div className="absolute top-0 right-0 w-5 h-5 border-t-4 border-r-4 border-green-400 rounded-tr-lg" />
+                      <div className="absolute bottom-0 left-0 w-5 h-5 border-b-4 border-l-4 border-green-400 rounded-bl-lg" />
+                      <div className="absolute bottom-0 right-0 w-5 h-5 border-b-4 border-r-4 border-green-400 rounded-br-lg" />
+                    </div>
+                  </div>
+                  <button
+                    onClick={stopCamera}
+                    className="absolute top-2 right-2 bg-black bg-opacity-60 text-white text-xs px-3 py-1.5 rounded-lg"
+                  >
+                    ✕ Tắt camera
+                  </button>
+                  <p className="absolute bottom-2 left-0 right-0 text-center text-white text-xs bg-black bg-opacity-40 py-1">
+                    Hướng camera vào mã QR trên vé
+                  </p>
+                </div>
+
+                {cameraError && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                    <p className="text-amber-800 text-sm">{cameraError}</p>
+                  </div>
+                )}
+
+                {cameraActive && typeof window !== 'undefined' && !('BarcodeDetector' in window) && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3">
+                    <p className="text-yellow-800 text-sm">Camera đang chạy nhưng trình duyệt chưa hỗ trợ quét QR tự động. Vui lòng nhập mã thủ công hoặc dùng Chrome mới nhất.</p>
+                  </div>
+                )}
+
+                {/* Manual input */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Nhập mã vé
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Mã vé</label>
                   <input
                     type="text"
                     value={checkinCode}
                     onChange={(e) => {
-                      setCheckinCode(e.target.value);
+                      const raw = e.target.value.trim();
+                      const urlMatch = raw.match(/\/ve\/(VCP[A-Z0-9]+)/i);
+                      setCheckinCode(urlMatch ? urlMatch[1] : raw.toUpperCase());
                       setCheckinError(null);
                     }}
-                    placeholder="VCP240109001"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    autoFocus
+                    onKeyDown={(e) => { if (e.key === 'Enter' && checkinCode) handleCheckin(checkinCode); }}
+                    placeholder="VCP240109001  (Enter để check-in)"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-lg"
+                    autoFocus={!cameraActive}
                   />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Quét mã QR hoặc nhập mã vé thủ công
-                  </p>
+                  <p className="text-xs text-gray-400 mt-1">Nhập thủ công hoặc dùng máy quét QR USB — tự động check-in khi quét</p>
                 </div>
 
                 {checkinError && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="bg-red-50 border border-red-200 rounded-xl p-3">
                     <p className="text-red-800 text-sm">{checkinError}</p>
                   </div>
                 )}
 
                 <div className="flex gap-3">
-                  <button
-                    onClick={() => {
-                      setShowCheckinModal(false);
-                      setCheckinCode('');
-                      setCheckinError(null);
-                    }}
-                    className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg hover:bg-gray-300"
-                  >
-                    Hủy
-                  </button>
+                  {!cameraActive ? (
+                    <button
+                      onClick={startCamera}
+                      className="flex-1 flex items-center justify-center gap-2 bg-gray-100 text-gray-700 py-3 rounded-xl hover:bg-gray-200 font-medium text-sm border border-gray-200"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Quét camera
+                    </button>
+                  ) : null}
                   <button
                     onClick={() => handleCheckin(checkinCode)}
                     disabled={!checkinCode || checkinLoading}
-                    className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                    className="flex-1 bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed font-semibold"
                   >
-                    {checkinLoading ? 'Đang xử lý...' : 'Check-in'}
+                    {checkinLoading ? '⏳ Đang xử lý...' : '✓ Check-in'}
                   </button>
                 </div>
               </div>
