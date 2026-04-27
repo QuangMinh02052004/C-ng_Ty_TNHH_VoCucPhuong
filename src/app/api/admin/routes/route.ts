@@ -90,6 +90,12 @@ export async function POST(request: NextRequest) {
       isActive: data.isActive !== undefined ? data.isActive : true
     });
 
+    // Fire-and-forget reverse sync: tạo TH_Routes mirror
+    const internalBase = process.env.VCP_INTERNAL_URL || 'https://vocucphuongmanage.vercel.app';
+    fetch(`${internalBase}/api/admin/sync/routes`, {
+      method: 'GET',
+    }).catch(() => {});
+
     return NextResponse.json({ route }, { status: 201 })
   } catch (error) {
     console.error('Error creating route:', error)

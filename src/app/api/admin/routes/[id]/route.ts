@@ -57,6 +57,25 @@ export async function PATCH(
       );
     }
 
+    // Fire-and-forget reverse sync → vocucphuong-internal (TH_Routes)
+    const internalBase = process.env.VCP_INTERNAL_URL || 'https://vocucphuongmanage.vercel.app';
+    fetch(`${internalBase}/api/admin/sync/routes/by-datve/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fromStation: data.from,
+        toStation: data.to,
+        price: data.price,
+        duration: data.duration,
+        busType: data.busType,
+        distance: data.distance,
+        operatingStart: data.operatingStart,
+        operatingEnd: data.operatingEnd,
+        intervalMinutes: data.intervalMinutes,
+        isActive: data.isActive,
+      }),
+    }).catch((err) => console.error('[reverse-sync] PATCH failed:', err));
+
     return NextResponse.json({ route })
   } catch (error) {
     console.error('Error updating route:', error)
@@ -111,6 +130,12 @@ export async function DELETE(
 
     // Xóa route (hard delete sẽ xóa cả schedules nếu có CASCADE trong database)
     await RouteRepository.hardDelete(id);
+
+    // Fire-and-forget reverse sync: deactivate TH_Routes liên kết
+    const internalBase = process.env.VCP_INTERNAL_URL || 'https://vocucphuongmanage.vercel.app';
+    fetch(`${internalBase}/api/admin/sync/routes/by-datve/${id}`, {
+      method: 'DELETE',
+    }).catch((err) => console.error('[reverse-sync] DELETE failed:', err));
 
     return NextResponse.json({ message: 'Route deleted successfully' })
   } catch (error) {
