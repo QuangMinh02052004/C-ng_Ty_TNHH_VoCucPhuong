@@ -192,24 +192,6 @@ export default function RoutesManagement() {
     }
   }
 
-  const handleDelete = async (routeId: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa tuyến đường này?')) return
-
-    try {
-      const response = await fetch(`/api/admin/routes/${routeId}`, {
-        method: 'DELETE'
-      })
-
-      if (!response.ok) throw new Error('Failed to delete route')
-
-      alert('Xóa tuyến đường thành công!')
-      fetchRoutes()
-    } catch (error) {
-      console.error('Error deleting route:', error)
-      alert('Không thể xóa tuyến đường')
-    }
-  }
-
   const toggleStatus = async (route: Route) => {
     try {
       const response = await fetch(`/api/admin/routes/${route.id}`, {
@@ -353,8 +335,7 @@ export default function RoutesManagement() {
                 </td>
                 <td className="px-3 py-2 text-right whitespace-nowrap">
                   <button onClick={() => openEditModal(route)} className="px-2 py-1 text-blue-700 border border-blue-200 rounded mr-1 hover:bg-blue-50">Sửa</button>
-                  <button onClick={() => toggleStatus(route)} className="px-2 py-1 text-gray-700 border border-gray-200 rounded mr-1 hover:bg-gray-50">{route.isActive ? 'Tắt' : 'Bật'}</button>
-                  <button onClick={() => handleDelete(route.id)} className="px-2 py-1 text-red-700 border border-red-200 rounded hover:bg-red-50">Xóa</button>
+                  <button onClick={() => toggleStatus(route)} className="px-2 py-1 text-gray-700 border border-gray-200 rounded hover:bg-gray-50">{route.isActive ? 'Tắt' : 'Bật'}</button>
                 </td>
               </tr>
             ))}
