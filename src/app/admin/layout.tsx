@@ -33,7 +33,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return (
         <div className="min-h-screen bg-gray-50">
             <aside
-                className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 transition-all duration-200 ${
+                className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 transition-all duration-200 z-20 overflow-y-auto ${
                     sidebarOpen ? 'w-56' : 'w-14'
                 }`}
             >
