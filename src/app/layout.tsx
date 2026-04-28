@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import PublicShell from "@/components/PublicShell";
 import Providers from "@/components/Providers";
 
 const inter = Inter({
@@ -53,11 +52,7 @@ export default function RootLayout({
     <html lang="vi">
       <body className={`${inter.className} antialiased`}>
         <Providers>
-          <Header />
-          <main className="min-h-screen">
-            {children}
-          </main>
-          <Footer />
+          <PublicShell>{children}</PublicShell>
         </Providers>
       </body>
     </html>
