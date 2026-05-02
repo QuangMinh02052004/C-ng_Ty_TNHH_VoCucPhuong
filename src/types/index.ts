@@ -8,6 +8,7 @@ export interface Route {
     availableSeats: number;
     busType: string;
     distance: number;
+    routeType?: 'cao_toc' | 'quoc_lo';
 }
 
 export interface Booking {
