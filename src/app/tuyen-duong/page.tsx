@@ -127,18 +127,15 @@ export default function TuyenDuongPage() {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 lg:divide-x lg:divide-gray-300">
                     {/* Cột Cao tốc */}
-                    <section>
-                        <div className="flex items-center gap-3 mb-5 pb-3 border-b-2 border-sky-200">
-                            <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-sky-500 text-white text-lg">
-                                ⚡
-                            </span>
+                    <section className="lg:pr-8">
+                        <div className="flex items-baseline justify-between mb-6 pb-3 border-b border-gray-200">
                             <div>
                                 <h2 className="text-xl md:text-2xl font-bold text-gray-800">Cao tốc</h2>
-                                <p className="text-sm text-gray-500">Đi nhanh, tiết kiệm thời gian</p>
+                                <p className="text-sm text-gray-500 mt-0.5">Đi nhanh, tiết kiệm thời gian</p>
                             </div>
-                            <span className="ml-auto text-sm font-semibold text-sky-600">{caoToc.length} tuyến</span>
+                            <span className="text-sm font-medium text-gray-600">{caoToc.length} tuyến</span>
                         </div>
 
                         {caoToc.length === 0 ? (
@@ -160,16 +157,13 @@ export default function TuyenDuongPage() {
                     </section>
 
                     {/* Cột Quốc lộ */}
-                    <section>
-                        <div className="flex items-center gap-3 mb-5 pb-3 border-b-2 border-amber-200">
-                            <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-amber-500 text-white text-lg">
-                                🛣️
-                            </span>
+                    <section className="mt-10 lg:mt-0 lg:pl-8">
+                        <div className="flex items-baseline justify-between mb-6 pb-3 border-b border-gray-200">
                             <div>
                                 <h2 className="text-xl md:text-2xl font-bold text-gray-800">Quốc lộ</h2>
-                                <p className="text-sm text-gray-500">Lộ trình truyền thống, ghé nhiều điểm</p>
+                                <p className="text-sm text-gray-500 mt-0.5">Lộ trình truyền thống, ghé nhiều điểm</p>
                             </div>
-                            <span className="ml-auto text-sm font-semibold text-amber-600">{quocLo.length} tuyến</span>
+                            <span className="text-sm font-medium text-gray-600">{quocLo.length} tuyến</span>
                         </div>
 
                         {quocLo.length === 0 ? (
@@ -193,23 +187,11 @@ export default function TuyenDuongPage() {
 
                 <div className="mt-12 bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
                     <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Lưu ý quan trọng</h2>
-                    <ul className="space-y-3 max-w-2xl mx-auto">
-                        <li className="flex items-start gap-3">
-                            <span className="text-sky-500 text-xl flex-shrink-0">✓</span>
-                            <span className="text-gray-700">Vui lòng có mặt tại bến xe trước giờ xuất bến 15 phút</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                            <span className="text-sky-500 text-xl flex-shrink-0">✓</span>
-                            <span className="text-gray-700">Mang theo CMND/CCCD để kiểm tra khi cần thiết</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                            <span className="text-sky-500 text-xl flex-shrink-0">✓</span>
-                            <span className="text-gray-700">Giá vé có thể thay đổi vào các dịp lễ, Tết</span>
-                        </li>
-                        <li className="flex items-start gap-3">
-                            <span className="text-sky-500 text-xl flex-shrink-0">✓</span>
-                            <span className="text-gray-700">Liên hệ hotline 02519 999 975 để biết thêm chi tiết</span>
-                        </li>
+                    <ul className="space-y-2.5 max-w-2xl mx-auto list-disc list-inside marker:text-sky-500">
+                        <li className="text-gray-700">Vui lòng có mặt tại bến xe trước giờ xuất bến 15 phút</li>
+                        <li className="text-gray-700">Mang theo CMND/CCCD để kiểm tra khi cần thiết</li>
+                        <li className="text-gray-700">Giá vé có thể thay đổi vào các dịp lễ, Tết</li>
+                        <li className="text-gray-700">Liên hệ hotline 02519 999 975 để biết thêm chi tiết</li>
                     </ul>
                 </div>
             </div>

@@ -240,23 +240,18 @@ function DatVeContent() {
     // Trang bảo trì khi admin tắt đặt vé online
     if (settingsLoaded && !bookingEnabled) {
         return (
-            <div className="min-h-[70vh] py-16 bg-gradient-to-b from-amber-50 to-white">
+            <div className="min-h-[70vh] py-16 bg-gradient-to-b from-sky-50 to-white">
                 <div className="container mx-auto px-4">
-                    <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-amber-200 p-8 md:p-12 text-center">
-                        <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-5">
-                            <span className="text-4xl">🚧</span>
-                        </div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">
-                            Đang bảo trì hệ thống đặt vé
+                    <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-8 md:p-12 text-center">
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
+                            Hệ thống đặt vé đang bảo trì
                         </h1>
-                        <p className="text-gray-600 text-base md:text-lg leading-relaxed mb-6 whitespace-pre-line">
+                        <p className="text-gray-600 text-base md:text-lg leading-relaxed mb-8 whitespace-pre-line">
                             {maintenanceMessage ||
                                 'Hệ thống đặt vé online đang trong quá trình hoàn thiện. Vui lòng liên hệ hotline để đặt vé.'}
                         </p>
-                        <div className="bg-sky-50 border border-sky-100 rounded-xl p-5 text-left space-y-2">
-                            <p className="font-semibold text-gray-800 flex items-center gap-2">
-                                <span>📞</span> Liên hệ đặt vé
-                            </p>
+                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 text-left space-y-2">
+                            <p className="font-semibold text-gray-800">Liên hệ đặt vé</p>
                             <p className="text-gray-700">
                                 Hotline:{' '}
                                 <a href="tel:02519999975" className="text-sky-600 font-bold hover:text-sky-700">
