@@ -6,6 +6,7 @@ import { generateBookingCode, formatDateVN } from '@/lib/utils';
 import { sendBookingConfirmationEmail } from '@/services/email.service';
 import { sendBookingConfirmationSMS } from '@/services/sms.service';
 import { generateTicketQRCode, generatePaymentQRCode } from '@/services/qrcode.service';
+import { isBookingEnabled, getMaintenanceMessage } from '@/lib/repositories/settings-repository';
 
 // ===========================================
 // API: TẠO ĐẶT VÉ MỚI
@@ -50,6 +51,16 @@ const createBookingSchema = z.object({
 
 export async function POST(request: NextRequest) {
     try {
+        // ✅ Kiểm tra feature flag — admin có thể tắt đặt vé online tạm thời
+        const enabled = await isBookingEnabled();
+        if (!enabled) {
+            const message = await getMaintenanceMessage();
+            return NextResponse.json(
+                { success: false, error: 'BOOKING_DISABLED', message },
+                { status: 503 }
+            );
+        }
+
         const body = await request.json();
 
         console.log('📥 [API] Received booking request:', body);

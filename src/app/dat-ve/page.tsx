@@ -28,6 +28,9 @@ function DatVeContent() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [popup, setPopup] = useState<{ show: boolean; title: string; message: string }>({ show: false, title: '', message: '' });
+    const [bookingEnabled, setBookingEnabled] = useState(true);
+    const [maintenanceMessage, setMaintenanceMessage] = useState('');
+    const [settingsLoaded, setSettingsLoaded] = useState(false);
 
     // Load routes from API
     useEffect(() => {
@@ -35,6 +38,18 @@ function DatVeContent() {
             .then(res => res.json())
             .then(data => { if (Array.isArray(data) && data.length > 0) setRoutes(data); })
             .catch(() => { /* fallback already set */ });
+    }, []);
+
+    // Load feature flags
+    useEffect(() => {
+        fetch('/api/settings', { cache: 'no-store' })
+            .then(res => res.json())
+            .then(data => {
+                if (typeof data.bookingEnabled === 'boolean') setBookingEnabled(data.bookingEnabled);
+                if (typeof data.maintenanceMessage === 'string') setMaintenanceMessage(data.maintenanceMessage);
+            })
+            .catch(() => { /* default = enabled */ })
+            .finally(() => setSettingsLoaded(true));
     }, []);
 
     // Tự động điền tuyến đường và khung giờ khi có route và time trong URL
@@ -184,6 +199,11 @@ function DatVeContent() {
 
             if (!response.ok || !result.success) {
                 console.error('❌ Booking failed:', result);
+                if (result.error === 'BOOKING_DISABLED') {
+                    setBookingEnabled(false);
+                    setMaintenanceMessage(result.message || maintenanceMessage);
+                    return;
+                }
                 throw new Error(result.error || result.message || 'Đặt vé thất bại!');
             }
 
@@ -216,6 +236,54 @@ function DatVeContent() {
             setLoading(false);
         }
     };
+
+    // Trang bảo trì khi admin tắt đặt vé online
+    if (settingsLoaded && !bookingEnabled) {
+        return (
+            <div className="min-h-[70vh] py-16 bg-gradient-to-b from-amber-50 to-white">
+                <div className="container mx-auto px-4">
+                    <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-amber-200 p-8 md:p-12 text-center">
+                        <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-5">
+                            <span className="text-4xl">🚧</span>
+                        </div>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-3">
+                            Đang bảo trì hệ thống đặt vé
+                        </h1>
+                        <p className="text-gray-600 text-base md:text-lg leading-relaxed mb-6 whitespace-pre-line">
+                            {maintenanceMessage ||
+                                'Hệ thống đặt vé online đang trong quá trình hoàn thiện. Vui lòng liên hệ hotline để đặt vé.'}
+                        </p>
+                        <div className="bg-sky-50 border border-sky-100 rounded-xl p-5 text-left space-y-2">
+                            <p className="font-semibold text-gray-800 flex items-center gap-2">
+                                <span>📞</span> Liên hệ đặt vé
+                            </p>
+                            <p className="text-gray-700">
+                                Hotline:{' '}
+                                <a href="tel:02519999975" className="text-sky-600 font-bold hover:text-sky-700">
+                                    02519 999 975
+                                </a>
+                            </p>
+                            <p className="text-gray-700">
+                                Email:{' '}
+                                <a
+                                    href="mailto:vocucphuong0018@gmail.com"
+                                    className="text-sky-600 font-semibold hover:text-sky-700"
+                                >
+                                    vocucphuong0018@gmail.com
+                                </a>
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => router.push('/')}
+                            className="mt-6 px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white rounded-lg font-semibold transition"
+                        >
+                            Về trang chủ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="py-16 bg-gradient-to-b from-sky-50 to-white">
