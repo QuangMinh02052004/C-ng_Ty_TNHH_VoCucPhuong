@@ -113,7 +113,7 @@ export default function Header() {
                             href="tel:02519999975"
                             className="hidden lg:flex items-center space-x-2 bg-sky-50 hover:bg-sky-100 px-4 py-2.5 rounded-md transition-all duration-200 border border-sky-200 group"
                         >
-                            <span className="text-xl">📞</span>
+                            
                             <div className="flex flex-col">
                                 <span className="text-xs text-sky-600 font-medium">Hotline 24/7</span>
                                 <span className="text-base font-semibold text-gray-800 group-hover:text-sky-600 transition-colors">02519 999 975</span>
@@ -156,7 +156,7 @@ export default function Header() {
                                             onClick={() => setDropdownOpen(false)}
                                             className="flex items-center gap-3 px-4 py-2 hover:bg-sky-50 transition-colors"
                                         >
-                                            <span className="text-lg">👤</span>
+                                            
                                             <span className="text-gray-700">Tài khoản của tôi</span>
                                         </Link>
 
@@ -165,7 +165,7 @@ export default function Header() {
                                             onClick={() => setDropdownOpen(false)}
                                             className="flex items-center gap-3 px-4 py-2 hover:bg-sky-50 transition-colors"
                                         >
-                                            <span className="text-lg">🎫</span>
+                                            
                                             <span className="text-gray-700">Vé của tôi</span>
                                         </Link>
 
@@ -177,7 +177,7 @@ export default function Header() {
                                                     onClick={() => setDropdownOpen(false)}
                                                     className="flex items-center gap-3 px-4 py-2 hover:bg-red-50 transition-colors"
                                                 >
-                                                    <span className="text-lg">⚙️</span>
+                                                    
                                                     <span className="text-red-600 font-semibold">Quản trị</span>
                                                 </Link>
                                             </>
@@ -189,7 +189,7 @@ export default function Header() {
                                             onClick={handleLogout}
                                             className="flex items-center gap-3 px-4 py-2 hover:bg-red-50 transition-colors w-full text-left"
                                         >
-                                            <span className="text-lg">🚪</span>
+                                            
                                             <span className="text-red-600">Đăng xuất</span>
                                         </button>
                                     </div>
@@ -239,7 +239,7 @@ export default function Header() {
                                             onClick={() => setMobileMenuOpen(false)}
                                             className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
                                         >
-                                            <span className="text-lg">🏠</span>
+                                            
                                             <span className="text-gray-700 font-medium">Trang chủ</span>
                                         </Link>
                                         <Link
@@ -247,7 +247,7 @@ export default function Header() {
                                             onClick={() => setMobileMenuOpen(false)}
                                             className="flex items-center gap-3 px-4 py-3 rounded-lg bg-sky-50 hover:bg-sky-100 transition-colors"
                                         >
-                                            <span className="text-lg">🎫</span>
+                                            
                                             <span className="text-sky-600 font-semibold">Đặt vé ngay</span>
                                         </Link>
                                         <Link
@@ -255,7 +255,7 @@ export default function Header() {
                                             onClick={() => setMobileMenuOpen(false)}
                                             className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
                                         >
-                                            <span className="text-lg">🛤️</span>
+                                            
                                             <span className="text-gray-700 font-medium">Tuyến đường</span>
                                         </Link>
                                         <Link
@@ -263,7 +263,7 @@ export default function Header() {
                                             onClick={() => setMobileMenuOpen(false)}
                                             className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
                                         >
-                                            <span className="text-lg">📰</span>
+                                            
                                             <span className="text-gray-700 font-medium">Tin tức</span>
                                         </Link>
                                         <Link
@@ -271,7 +271,7 @@ export default function Header() {
                                             onClick={() => setMobileMenuOpen(false)}
                                             className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
                                         >
-                                            <span className="text-lg">ℹ️</span>
+                                            
                                             <span className="text-gray-700 font-medium">Giới thiệu</span>
                                         </Link>
                                         <Link
@@ -279,7 +279,7 @@ export default function Header() {
                                             onClick={() => setMobileMenuOpen(false)}
                                             className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
                                         >
-                                            <span className="text-lg">📞</span>
+                                            
                                             <span className="text-gray-700 font-medium">Hỗ trợ</span>
                                         </Link>
                                     </div>
@@ -308,7 +308,7 @@ export default function Header() {
                                                     onClick={() => setMobileMenuOpen(false)}
                                                     className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
                                                 >
-                                                    <span className="text-lg">👤</span>
+                                                    
                                                     <span className="text-gray-700 font-medium">Tài khoản của tôi</span>
                                                 </Link>
                                                 <Link
@@ -316,7 +316,7 @@ export default function Header() {
                                                     onClick={() => setMobileMenuOpen(false)}
                                                     className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
                                                 >
-                                                    <span className="text-lg">🎫</span>
+                                                    
                                                     <span className="text-gray-700 font-medium">Vé của tôi</span>
                                                 </Link>
 
@@ -326,7 +326,7 @@ export default function Header() {
                                                         onClick={() => setMobileMenuOpen(false)}
                                                         className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-50 transition-colors"
                                                     >
-                                                        <span className="text-lg">⚙️</span>
+                                                        
                                                         <span className="text-red-600 font-semibold">Quản trị</span>
                                                     </Link>
                                                 )}
@@ -338,7 +338,7 @@ export default function Header() {
                                                     }}
                                                     className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-red-50 transition-colors w-full text-left"
                                                 >
-                                                    <span className="text-lg">🚪</span>
+                                                    
                                                     <span className="text-red-600 font-medium">Đăng xuất</span>
                                                 </button>
                                             </>
@@ -368,7 +368,7 @@ export default function Header() {
                                             href="tel:02519999975"
                                             className="flex items-center gap-3 text-sky-600"
                                         >
-                                            <span className="text-xl">📞</span>
+                                            
                                             <div>
                                                 <p className="text-xs text-gray-500">Hotline 24/7</p>
                                                 <p className="font-semibold">02519 999 975</p>

@@ -76,7 +76,7 @@ export default function LienHePage() {
                 {success && (
                     <div className="mb-8 p-6 bg-green-50 border border-green-200 rounded-xl max-w-3xl mx-auto">
                         <div className="flex items-start">
-                            <div className="text-4xl mr-4">✅</div>
+                            
                             <div>
                                 <h3 className="text-lg font-semibold text-green-800 mb-2">Gửi tin nhắn thành công!</h3>
                                 <p className="text-green-700">
@@ -91,7 +91,7 @@ export default function LienHePage() {
                 {error && (
                     <div className="mb-8 p-6 bg-red-50 border border-red-200 rounded-xl max-w-3xl mx-auto">
                         <div className="flex items-start">
-                            <div className="text-4xl mr-4">❌</div>
+                            
                             <div>
                                 <h3 className="text-lg font-semibold text-red-800 mb-2">Có lỗi xảy ra</h3>
                                 <p className="text-red-700">{error}</p>
@@ -205,7 +205,7 @@ export default function LienHePage() {
                             <h2 className="text-2xl font-semibold mb-6 text-gray-800">Thông tin liên hệ</h2>
                             <div className="space-y-6">
                                 <div className="flex items-start">
-                                    <div className="text-3xl mr-4">📍</div>
+                                    
                                     <div>
                                         <h3 className="font-semibold mb-1 text-gray-800">Địa chỉ</h3>
                                         <div className="text-gray-600 space-y-2 text-sm">
@@ -217,7 +217,7 @@ export default function LienHePage() {
                                 </div>
 
                                 <div className="flex items-start">
-                                    <div className="text-3xl mr-4">📞</div>
+                                    
                                     <div>
                                         <h3 className="font-semibold mb-1 text-gray-800">Điện thoại</h3>
                                         <p className="text-gray-600 text-sm">
@@ -230,7 +230,7 @@ export default function LienHePage() {
                                 </div>
 
                                 <div className="flex items-start">
-                                    <div className="text-3xl mr-4">📧</div>
+                                    
                                     <div>
                                         <h3 className="font-semibold mb-1 text-gray-800">Email</h3>
                                         <p className="text-gray-600 text-sm">
@@ -242,7 +242,7 @@ export default function LienHePage() {
                                 </div>
 
                                 <div className="flex items-start">
-                                    <div className="text-3xl mr-4">🕐</div>
+                                    
                                     <div>
                                         <h3 className="font-semibold mb-1 text-gray-800">Giờ làm việc</h3>
                                         <p className="text-gray-600 text-sm">Thứ 2 - Chủ nhật: 3:30 - 22:00</p>

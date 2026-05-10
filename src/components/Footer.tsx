@@ -46,12 +46,11 @@ export default function Footer() {
                     {/* Liên hệ */}
                     <div>
                         <h3 className="text-xl font-bold mb-4">Liên hệ</h3>
-                        <ul className="space-y-2 text-gray-400">
-                            <li>📍 Văn phòng Quận 5: 97i đường Nguyễn Duy Dương, phường 9, quận 5</li>
-                            <li>📍 Văn phòng Hàng Xanh: 496B đường Điện Biên Phủ, phường 21, quận Bình Thạnh</li>
-
-                            <li>📞 02519 999 975</li>
-                            <li>📧 vocucphuong0018@gmail.com</li>
+                        <ul className="space-y-2 text-gray-300">
+                            <li>Văn phòng Quận 5: 97i Nguyễn Duy Dương, P.9, Q.5</li>
+                            <li>Văn phòng Hàng Xanh: 496B Điện Biên Phủ, P.21, Bình Thạnh</li>
+                            <li>Hotline: 02519 999 975</li>
+                            <li>Email: vocucphuong0018@gmail.com</li>
                         </ul>
                     </div>
 

@@ -330,16 +330,16 @@ function DatVeContent() {
                         {/* Error Message */}
                         {error && (
                             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-                                <span className="text-2xl">❌</span>
                                 <div className="flex-1">
                                     <h4 className="font-semibold text-red-800 mb-1">Có lỗi xảy ra</h4>
-                                    <p className="text-sm text-red-600">{error}</p>
+                                    <p className="text-sm text-red-700">{error}</p>
                                 </div>
                                 <button
                                     onClick={() => setError(null)}
-                                    className="text-red-400 hover:text-red-600"
+                                    className="text-red-500 hover:text-red-700 font-bold text-lg leading-none"
+                                    aria-label="Đóng"
                                 >
-                                    ✕
+                                    ×
                                 </button>
                             </div>
                         )}
@@ -347,13 +347,13 @@ function DatVeContent() {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Chọn tuyến đường */}
                             <div>
-                                <label className="block text-sm font-medium mb-2">
+                                <label className="block text-sm font-medium text-gray-800 mb-2">
                                     Tuyến đường <span className="text-red-500">*</span>
                                 </label>
                                 <select
                                     value={formData.routeId}
                                     onChange={(e) => handleRouteChange(e.target.value)}
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                     required
                                 >
                                     <option value="">-- Chọn tuyến đường --</option>
@@ -367,71 +367,45 @@ function DatVeContent() {
 
                             {/* Thông tin chi tiết tuyến */}
                             {selectedRoute && (
-                                <div className="bg-gradient-to-br from-sky-50 to-blue-50 p-6 rounded-xl border border-sky-200">
-                                    <h3 className="font-semibold text-lg mb-4 text-gray-800 flex items-center gap-2">
-                                        <span className="text-2xl">ℹ️</span>
+                                <div className="bg-white p-6 rounded-xl border border-gray-200">
+                                    <h3 className="font-semibold text-lg mb-4 text-gray-900 border-b border-gray-200 pb-3">
                                         Thông tin tuyến đường
                                     </h3>
                                     <div className="space-y-3">
                                         {/* Khung giờ hoạt động */}
-                                        <div className="bg-white p-4 rounded-lg border border-gray-200">
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <span className="text-2xl">🕐</span>
-                                                <span className="font-medium text-gray-700">Khung giờ hoạt động:</span>
-                                            </div>
-                                            <div className="bg-sky-50 p-3 rounded-lg border border-sky-100">
-                                                <p className="text-center text-lg font-bold text-gray-800">
-                                                    {(() => {
-                                                        const slots = getTimeSlots();
-                                                        if (slots.length > 0) {
-                                                            return `${slots[0]} - ${slots[slots.length - 1]}`;
-                                                        }
-                                                        return 'Vui lòng chọn tuyến';
-                                                    })()}
-                                                </p>
-                                                <p className="text-center text-sm text-gray-600 mt-1">
-                                                    ⏰ Xe chạy mỗi 30 phút
-                                                </p>
-                                            </div>
+                                        <div className="bg-sky-50 p-4 rounded-lg border border-sky-100">
+                                            <p className="text-xs uppercase tracking-wider text-sky-700 font-semibold mb-2">Khung giờ hoạt động</p>
+                                            <p className="text-center text-lg font-bold text-gray-900">
+                                                {(() => {
+                                                    const slots = getTimeSlots();
+                                                    if (slots.length > 0) {
+                                                        return `${slots[0]} - ${slots[slots.length - 1]}`;
+                                                    }
+                                                    return 'Vui lòng chọn tuyến';
+                                                })()}
+                                            </p>
+                                            <p className="text-center text-sm text-gray-700 mt-1">
+                                                Xe chạy mỗi 30 phút
+                                            </p>
                                         </div>
 
                                         {/* Thông tin khác */}
                                         <div className="grid grid-cols-2 gap-3">
-                                            <div className="bg-white p-3 rounded-lg border border-gray-200">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="font-medium flex items-center gap-2 text-sm">
-                                                        <span className="text-xl">⏱️</span>
-                                                        Thời gian:
-                                                    </span>
-                                                    <span className="font-semibold text-gray-800">{selectedRoute.duration}</span>
-                                                </div>
+                                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-center justify-between">
+                                                <span className="text-sm text-gray-700">Thời gian</span>
+                                                <span className="font-semibold text-gray-900">{selectedRoute.duration}</span>
                                             </div>
-                                            <div className="bg-white p-3 rounded-lg border border-gray-200">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="font-medium flex items-center gap-2 text-sm">
-                                                        <span className="text-xl">🚌</span>
-                                                        Loại xe:
-                                                    </span>
-                                                    <span className="font-semibold text-gray-800">{selectedRoute.busType}</span>
-                                                </div>
+                                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-center justify-between">
+                                                <span className="text-sm text-gray-700">Loại xe</span>
+                                                <span className="font-semibold text-gray-900">{selectedRoute.busType}</span>
                                             </div>
-                                            <div className="bg-white p-3 rounded-lg border border-gray-200">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="font-medium flex items-center gap-2 text-sm">
-                                                        <span className="text-xl">💺</span>
-                                                        Ghế trống:
-                                                    </span>
-                                                    <span className="font-semibold text-green-600">{selectedRoute.availableSeats} chỗ</span>
-                                                </div>
+                                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-center justify-between">
+                                                <span className="text-sm text-gray-700">Ghế trống</span>
+                                                <span className="font-semibold text-green-700">{selectedRoute.availableSeats} chỗ</span>
                                             </div>
-                                            <div className="bg-white p-3 rounded-lg border border-gray-200">
-                                                <div className="flex items-center justify-between">
-                                                    <span className="font-medium flex items-center gap-2 text-sm">
-                                                        <span className="text-xl">💰</span>
-                                                        Giá vé:
-                                                    </span>
-                                                    <span className="font-semibold text-sky-600">{selectedRoute.price.toLocaleString('vi-VN')} đ</span>
-                                                </div>
+                                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 flex items-center justify-between">
+                                                <span className="text-sm text-gray-700">Giá vé</span>
+                                                <span className="font-semibold text-sky-700">{selectedRoute.price.toLocaleString('vi-VN')} đ</span>
                                             </div>
                                         </div>
                                     </div>
@@ -441,28 +415,28 @@ function DatVeContent() {
                             {/* Thông tin khách hàng */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium mb-2">
+                                    <label className="block text-sm font-medium text-gray-800 mb-2">
                                         Họ và tên <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
                                         value={formData.customerName}
                                         onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                         placeholder="Nguyễn Văn A"
                                         required
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium mb-2">
+                                    <label className="block text-sm font-medium text-gray-800 mb-2">
                                         Số điện thoại <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="tel"
                                         value={formData.phone}
                                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                         placeholder="0123456789"
                                         required
                                     />
@@ -470,39 +444,39 @@ function DatVeContent() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-2">
-                                    Email <span className="text-gray-400 text-xs">(để nhận xác nhận vé)</span>
+                                <label className="block text-sm font-medium text-gray-800 mb-2">
+                                    Email <span className="text-gray-500 text-xs font-normal">(để nhận xác nhận vé)</span>
                                 </label>
                                 <input
                                     type="email"
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                     placeholder="example@email.com"
                                 />
-                                <p className="text-xs text-gray-500 mt-1">
-                                    📧 Nhập email để nhận thông tin xác nhận vé và mã QR qua email
+                                <p className="text-xs text-gray-600 mt-1">
+                                    Nhập email để nhận thông tin xác nhận vé và mã QR qua email
                                 </p>
                             </div>
 
                             {/* Thời gian và số ghế */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <label className="block text-sm font-medium mb-2">
+                                    <label className="block text-sm font-medium text-gray-800 mb-2">
                                         Ngày đi <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="date"
                                         value={formData.date}
                                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                         min={new Date().toISOString().split('T')[0]}
                                         required
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium mb-2">
+                                    <label className="block text-sm font-medium text-gray-800 mb-2">
                                         Giờ xuất bến <span className="text-red-500">*</span>
                                     </label>
                                     <select
@@ -519,7 +493,7 @@ function DatVeContent() {
                                             }
                                             setFormData({ ...formData, departureTime: time });
                                         }}
-                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                         required
                                         disabled={!selectedRoute}
                                     >
@@ -535,19 +509,19 @@ function DatVeContent() {
                                         ))}
                                     </select>
                                     {formData.date && (
-                                        <p className="text-gray-500 text-xs mt-1">
-                                            ⏰ Các khung giờ đã qua sẽ không thể đặt
+                                        <p className="text-gray-600 text-xs mt-1">
+                                            Các khung giờ đã qua sẽ không thể đặt
                                         </p>
                                     )}
                                     {!selectedRoute && (
-                                        <p className="text-orange-500 text-xs mt-1">
-                                            ℹ️ Vui lòng chọn tuyến đường trước
+                                        <p className="text-orange-600 text-xs mt-1">
+                                            Vui lòng chọn tuyến đường trước
                                         </p>
                                     )}
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium mb-2">
+                                    <label className="block text-sm font-medium text-gray-800 mb-2">
                                         Số ghế đã chọn
                                     </label>
                                     <div className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50">
@@ -576,7 +550,7 @@ function DatVeContent() {
 
                             {/* Tổng tiền (Read-only) */}
                             <div>
-                                <label className="block text-sm font-medium mb-2">
+                                <label className="block text-sm font-medium text-gray-800 mb-2">
                                     Tổng tiền
                                 </label>
                                 <input
@@ -655,12 +629,12 @@ function DatVeContent() {
 
                     {/* Thông tin hỗ trợ */}
                     <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-                        <h3 className="font-semibold mb-3 text-gray-800">📞 Cần hỗ trợ?</h3>
-                        <p className="text-gray-600 mb-2">
-                            Liên hệ hotline: <a href="tel:02519999975" className="text-sky-600 font-semibold hover:text-sky-700">02519 999 975</a>
+                        <h3 className="font-semibold mb-3 text-gray-900">Cần hỗ trợ?</h3>
+                        <p className="text-gray-700 mb-2">
+                            Hotline: <a href="tel:02519999975" className="text-sky-700 font-semibold hover:text-sky-800">02519 999 975</a>
                         </p>
-                        <p className="text-gray-600">
-                            Email: <a href="mailto:vocucphuong0018@gmail.com" className="text-sky-600 font-semibold hover:text-sky-700">
+                        <p className="text-gray-700">
+                            Email: <a href="mailto:vocucphuong0018@gmail.com" className="text-sky-700 font-semibold hover:text-sky-800">
                                 vocucphuong0018@gmail.com</a>
                         </p>
                     </div>
@@ -675,8 +649,8 @@ export default function DatVePage() {
         <Suspense fallback={
             <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white flex items-center justify-center">
                 <div className="text-center">
-                    <div className="text-5xl mb-4">🚌</div>
-                    <p className="text-gray-600">Đang tải...</p>
+                    <div className="w-10 h-10 mx-auto mb-4 border-4 border-sky-200 border-t-sky-600 rounded-full animate-spin" />
+                    <p className="text-gray-700 font-medium">Đang tải...</p>
                 </div>
             </div>
         }>

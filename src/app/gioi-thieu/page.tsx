@@ -15,17 +15,17 @@ export default function GioiThieuPage() {
                 {/* Thông tin cơ bản */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                     <div className="bg-white rounded-xl shadow-sm border border-sky-100 p-8 text-center">
-                        <div className="text-4xl mb-3">📅</div>
+                        
                         <h3 className="text-xl font-semibold mb-2 text-gray-800">Thành lập</h3>
                         <p className="text-gray-600">Năm {companyInfo.founded}</p>
                     </div>
                     <div className="bg-white rounded-xl shadow-sm border border-sky-100 p-8 text-center">
-                        <div className="text-4xl mb-3">🚌</div>
+                        
                         <h3 className="text-xl font-semibold mb-2 text-gray-800">Đội xe</h3>
                         <p className="text-gray-600">Hơn 50 xe hiện đại</p>
                     </div>
                     <div className="bg-white rounded-xl shadow-sm border border-sky-100 p-8 text-center">
-                        <div className="text-4xl mb-3">👥</div>
+                        
                         <h3 className="text-xl font-semibold mb-2 text-gray-800">Khách hàng</h3>
                         <p className="text-gray-600">Hơn 100,000 lượt khách/năm</p>
                     </div>
@@ -35,7 +35,7 @@ export default function GioiThieuPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="text-3xl">🎯</div>
+                            
                             <h2 className="text-2xl font-semibold text-gray-800">Tầm nhìn</h2>
                         </div>
                         <p className="text-gray-600 leading-relaxed">
@@ -44,7 +44,7 @@ export default function GioiThieuPage() {
                     </div>
                     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="text-3xl">💼</div>
+                            
                             <h2 className="text-2xl font-semibold text-gray-800">Sứ mệnh</h2>
                         </div>
                         <p className="text-gray-600 leading-relaxed">
@@ -76,28 +76,28 @@ export default function GioiThieuPage() {
                     <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">Cam kết của chúng tôi</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div className="bg-sky-50 rounded-lg p-6 text-center border border-sky-100">
-                            <div className="text-4xl mb-3">🛡️</div>
+                            
                             <h3 className="font-semibold mb-2 text-gray-800">An toàn tuyệt đối</h3>
                             <p className="text-gray-600 text-sm">
                                 Lái xe chuyên nghiệp, bảo hiểm đầy đủ
                             </p>
                         </div>
                         <div className="bg-sky-50 rounded-lg p-6 text-center border border-sky-100">
-                            <div className="text-4xl mb-3">⏰</div>
+                            
                             <h3 className="font-semibold mb-2 text-gray-800">Đúng giờ</h3>
                             <p className="text-gray-600 text-sm">
                                 Xuất bến và đến nơi đúng lịch trình
                             </p>
                         </div>
                         <div className="bg-sky-50 rounded-lg p-6 text-center border border-sky-100">
-                            <div className="text-4xl mb-3">❤️</div>
+                            
                             <h3 className="font-semibold mb-2 text-gray-800">Phục vụ tận tâm</h3>
                             <p className="text-gray-600 text-sm">
                                 Nhân viên nhiệt tình, chu đáo
                             </p>
                         </div>
                         <div className="bg-sky-50 rounded-lg p-6 text-center border border-sky-100">
-                            <div className="text-4xl mb-3">💰</div>
+                            
                             <h3 className="font-semibold mb-2 text-gray-800">Giá cả hợp lý</h3>
                             <p className="text-gray-600 text-sm">
                                 Minh bạch, không phát sinh chi phí
@@ -117,13 +117,13 @@ export default function GioiThieuPage() {
                             href="tel:02519999975"
                             className="bg-sky-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-sky-600 transition-colors"
                         >
-                            📞 Gọi ngay
+                            Gọi ngay
                         </a>
                         <a
                             href="/lien-he"
                             className="bg-white text-gray-700 hover:bg-gray-50 px-8 py-3 rounded-lg font-semibold transition-colors border border-gray-300"
                         >
-                            📧 Gửi tin nhắn
+                            Gửi tin nhắn
                         </a>
                     </div>
                 </div>

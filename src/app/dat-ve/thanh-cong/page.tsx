@@ -129,8 +129,8 @@ function BookingSuccessContent() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-sky-50 to-white">
                 <div className="text-center">
-                    <div className="text-6xl mb-4 animate-bounce">🎫</div>
-                    <p className="text-gray-600">Đang tải thông tin vé...</p>
+                    <div className="w-10 h-10 mx-auto mb-4 border-4 border-sky-200 border-t-sky-600 rounded-full animate-spin" />
+                    <p className="text-gray-700 font-medium">Đang tải thông tin vé...</p>
                 </div>
             </div>
         );
@@ -140,8 +140,7 @@ function BookingSuccessContent() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-sky-50 to-white">
                 <div className="text-center max-w-md">
-                    <div className="text-6xl mb-4">❌</div>
-                    <h1 className="text-2xl font-bold text-gray-800 mb-4">Không tìm thấy thông tin đặt vé</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-4">Không tìm thấy thông tin đặt vé</h1>
                     <p className="text-gray-600 mb-6">
                         Vui lòng kiểm tra lại hoặc đặt vé mới
                     </p>
@@ -236,14 +235,14 @@ function BookingSuccessContent() {
                 <div className="container mx-auto px-4 max-w-4xl">
                     {/* Success Header - Hide when printing */}
                     <div className="text-center mb-8 no-print">
-                        <div className="inline-block p-4 bg-green-100 rounded-full mb-4">
-                            <div className="text-6xl">✅</div>
-                        </div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-                            Đặt vé thành công!
+                        <p className="inline-block text-xs uppercase tracking-widest text-green-700 bg-green-50 border border-green-200 rounded-full px-4 py-1 font-semibold mb-3">
+                            Đặt vé thành công
+                        </p>
+                        <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+                            Cảm ơn quý khách đã đặt vé
                         </h1>
-                        <p className="text-lg text-gray-600">
-                            Mã đặt vé của bạn: <span className="font-bold text-sky-600">{bookingData.bookingCode}</span>
+                        <p className="text-lg text-gray-700">
+                            Mã đặt vé của bạn: <span className="font-bold text-sky-700">{bookingData.bookingCode}</span>
                         </p>
                     </div>
 
@@ -380,79 +379,57 @@ function BookingSuccessContent() {
                     </div>
 
                     {/* Booking Info Card - Hide when printing */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-6 no-print">
-                        <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                            <span className="text-2xl">📋</span>
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-6 no-print">
+                        <h2 className="text-xl font-bold text-gray-900 mb-6 border-b border-gray-200 pb-3">
                             Thông tin đặt vé
                         </h2>
 
                         <div className="space-y-4">
-                            <div className="flex items-start gap-4 pb-4 border-b border-gray-100">
-                                <span className="text-2xl">🚌</span>
-                                <div className="flex-1">
-                                    <p className="text-sm text-gray-500 mb-1">Tuyến đường</p>
-                                    <p className="text-lg font-semibold text-gray-800">
-                                        {bookingData.routeFrom} → {bookingData.routeTo}
-                                    </p>
-                                </div>
+                            <div className="pb-4 border-b border-gray-100">
+                                <p className="text-xs uppercase tracking-wider text-sky-700 font-semibold mb-1">Tuyến đường</p>
+                                <p className="text-lg font-semibold text-gray-900">
+                                    {bookingData.routeFrom} → {bookingData.routeTo}
+                                </p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="flex items-start gap-4">
-                                    <span className="text-2xl">👤</span>
-                                    <div className="flex-1">
-                                        <p className="text-sm text-gray-500">Họ và tên</p>
-                                        <p className="font-semibold text-gray-800">{bookingData.customerName}</p>
-                                    </div>
+                                <div>
+                                    <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1">Họ và tên</p>
+                                    <p className="font-semibold text-gray-900">{bookingData.customerName}</p>
                                 </div>
 
-                                <div className="flex items-start gap-4">
-                                    <span className="text-2xl">📞</span>
-                                    <div className="flex-1">
-                                        <p className="text-sm text-gray-500">Số điện thoại</p>
-                                        <p className="font-semibold text-gray-800">{bookingData.customerPhone}</p>
-                                    </div>
+                                <div>
+                                    <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1">Số điện thoại</p>
+                                    <p className="font-semibold text-gray-900">{bookingData.customerPhone}</p>
                                 </div>
 
                                 {bookingData.customerEmail && (
-                                    <div className="flex items-start gap-4">
-                                        <span className="text-2xl">📧</span>
-                                        <div className="flex-1">
-                                            <p className="text-sm text-gray-500">Email</p>
-                                            <p className="font-semibold text-gray-800">{bookingData.customerEmail}</p>
-                                        </div>
+                                    <div className="md:col-span-2">
+                                        <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1">Email</p>
+                                        <p className="font-semibold text-gray-900">{bookingData.customerEmail}</p>
                                     </div>
                                 )}
 
-                                <div className="flex items-start gap-4">
-                                    <span className="text-2xl">📅</span>
-                                    <div className="flex-1">
-                                        <p className="text-sm text-gray-500">Ngày đi</p>
-                                        <p className="font-semibold text-gray-800">{bookingData.date}</p>
-                                    </div>
+                                <div>
+                                    <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1">Ngày đi</p>
+                                    <p className="font-semibold text-gray-900">{bookingData.date}</p>
                                 </div>
 
-                                <div className="flex items-start gap-4">
-                                    <span className="text-2xl">🕐</span>
-                                    <div className="flex-1">
-                                        <p className="text-sm text-gray-500">Giờ xuất bến</p>
-                                        <p className="font-semibold text-gray-800">{bookingData.departureTime}</p>
-                                    </div>
+                                <div>
+                                    <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1">Giờ xuất bến</p>
+                                    <p className="font-semibold text-gray-900">{bookingData.departureTime}</p>
                                 </div>
 
-                                <div className="flex items-start gap-4">
-                                    <span className="text-2xl">💺</span>
-                                    <div className="flex-1">
-                                        <p className="text-sm text-gray-500">Số ghế</p>
-                                        <p className="font-semibold text-gray-800">{bookingData.seats} ghế</p>
-                                    </div>
+                                <div>
+                                    <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1">Số ghế</p>
+                                    <p className="font-semibold text-gray-900">{bookingData.seats} ghế</p>
                                 </div>
                             </div>
 
                             <div className="pt-4 border-t border-gray-200">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-lg font-semibold text-gray-700">Tổng tiền:</span>
-                                    <span className="text-2xl font-bold text-sky-600">
+                                    <span className="text-lg font-semibold text-gray-800">Tổng tiền</span>
+                                    <span className="text-2xl font-bold text-sky-700">
                                         {(bookingData.totalPrice || 0).toLocaleString('vi-VN')} đ
                                     </span>
                                 </div>
@@ -463,8 +440,7 @@ function BookingSuccessContent() {
                     {/* Ticket QR - Hide when printing */}
                     {bookingData.qrCodes?.ticket && (
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6 no-print text-center">
-                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center justify-center gap-2">
-                                <span className="text-xl">🎫</span>
+                            <h3 className="text-lg font-bold text-gray-900 mb-4 text-center">
                                 Mã QR vé xe
                             </h3>
                             <div className="flex justify-center mb-3 bg-gray-50 p-4 rounded-lg inline-block mx-auto">
@@ -488,8 +464,7 @@ function BookingSuccessContent() {
 
                     {/* Important Notes - Hide when printing */}
                     <div className="bg-yellow-50 rounded-xl border border-yellow-200 p-6 mb-6 no-print">
-                        <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                            <span className="text-xl">⚠️</span>
+                        <h3 className="font-bold text-gray-900 mb-3">
                             Lưu ý quan trọng
                         </h3>
                         <ul className="space-y-2 text-sm text-gray-700">
@@ -542,9 +517,9 @@ function BookingSuccessContent() {
                     <div className="mt-8 text-center text-sm text-gray-600 no-print">
                         <p className="mb-2">Cần hỗ trợ? Liên hệ với chúng tôi:</p>
                         <p>
-                            📞 Hotline: <a href="tel:02519999975" className="text-sky-600 font-semibold hover:text-sky-700">02519 999 975</a>
-                            {' | '}
-                            📧 Email: <a href="mailto:vocucphuong0018@gmail.com" className="text-sky-600 font-semibold hover:text-sky-700">vocucphuong0018@gmail.com</a>
+                            Hotline: <a href="tel:02519999975" className="text-sky-700 font-semibold hover:text-sky-800">02519 999 975</a>
+                            {' · '}
+                            Email: <a href="mailto:vocucphuong0018@gmail.com" className="text-sky-700 font-semibold hover:text-sky-800">vocucphuong0018@gmail.com</a>
                         </p>
                     </div>
 
@@ -622,8 +597,8 @@ export default function BookingSuccessPage() {
         <Suspense fallback={
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-sky-50 to-white">
                 <div className="text-center">
-                    <div className="text-6xl mb-4 animate-bounce">🎫</div>
-                    <p className="text-gray-600">Đang tải thông tin vé...</p>
+                    <div className="w-10 h-10 mx-auto mb-4 border-4 border-sky-200 border-t-sky-600 rounded-full animate-spin" />
+                    <p className="text-gray-700 font-medium">Đang tải thông tin vé...</p>
                 </div>
             </div>
         }>

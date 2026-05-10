@@ -153,7 +153,7 @@ export default function MyBookingsPage() {
         {/* Bookings Grid */}
         {bookings.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-12 text-center">
-            <div className="text-6xl mb-4">🎫</div>
+            
             <h2 className="text-xl font-semibold text-gray-900 mb-2">
               Chưa có vé nào
             </h2>
@@ -322,7 +322,7 @@ export default function MyBookingsPage() {
                   </div>
                   <p className="text-sm text-gray-500 mt-3">
                     {selectedBooking.checkedIn
-                      ? '⚠️ Vé này đã được check-in và không thể sử dụng lại'
+                      ? 'Vé này đã được check-in và không thể sử dụng lại'
                       : 'Xuất trình mã QR này khi lên xe'}
                   </p>
                 </div>
