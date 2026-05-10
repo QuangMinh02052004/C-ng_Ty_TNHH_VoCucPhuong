@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { routes as fallbackRoutes } from '@/data/routes';
 import { Route } from '@/types';
+import SeatPicker from '@/components/SeatPicker';
 
 function DatVeContent() {
     const searchParams = useSearchParams();
@@ -22,6 +23,12 @@ function DatVeContent() {
         departureTime: '',
         seats: 1,
     });
+    const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
+
+    // Tổng số ghế hiển thị = số ghế khách đã pick trên sơ đồ
+    useEffect(() => {
+        setFormData(prev => ({ ...prev, seats: selectedSeats.length }));
+    }, [selectedSeats]);
 
     const [routes, setRoutes] = useState<Route[]>(fallbackRoutes);
     const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
@@ -143,8 +150,8 @@ function DatVeContent() {
             return;
         }
 
-        if (formData.seats <= 0) {
-            setError('Vui lòng chọn ít nhất 1 ghế để đặt vé!');
+        if (selectedSeats.length === 0) {
+            setError('Vui lòng chọn ít nhất 1 ghế trên sơ đồ!');
             return;
         }
 
@@ -174,7 +181,8 @@ function DatVeContent() {
                 customerEmail: formData.email || undefined,
                 date: formData.date,
                 departureTime: formData.departureTime,
-                seats: formData.seats,
+                seats: selectedSeats.length,
+                selectedSeats,
                 userId: session?.user?.id,
             };
 
@@ -218,7 +226,8 @@ function DatVeContent() {
                 routeTo: selectedRoute.to,
                 date: formData.date,
                 departureTime: formData.departureTime,
-                seats: formData.seats,
+                seats: selectedSeats.length,
+                selectedSeats,
                 totalPrice: result.data.booking.totalPrice,
                 status: result.data.booking.status,
                 qrCodes: result.data.qrCodes,
@@ -539,38 +548,31 @@ function DatVeContent() {
 
                                 <div>
                                     <label className="block text-sm font-medium mb-2">
-                                        Số ghế <span className="text-red-500">*</span>
+                                        Số ghế đã chọn
                                     </label>
-                                    <input
-                                        type="number"
-                                        value={formData.seats}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            // Nếu xóa hết hoặc nhập rỗng, set về 0
-                                            if (value === '' || value === null) {
-                                                setFormData({ ...formData, seats: 0 });
-                                            } else {
-                                                setFormData({ ...formData, seats: parseInt(value) || 0 });
-                                            }
-                                        }}
-                                        onFocus={(e) => {
-                                            // Khi focus vào input, nếu giá trị là 0 thì select hết để dễ nhập
-                                            if (formData.seats === 0) {
-                                                e.target.select();
-                                            }
-                                        }}
-                                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                                        min="0"
-                                        max="10"
-                                        required
-                                    />
-                                    {formData.seats === 0 && (
-                                        <p className="text-red-500 text-sm mt-1">
-                                            ⚠️ Vui lòng chọn ít nhất 1 ghế
-                                        </p>
-                                    )}
+                                    <div className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-50">
+                                        {selectedSeats.length === 0 ? (
+                                            <span className="text-gray-400 text-sm">Chọn ghế trên sơ đồ bên dưới</span>
+                                        ) : (
+                                            <span className="font-semibold text-gray-800">
+                                                {selectedSeats.length} ghế: {selectedSeats.slice().sort((a, b) => a - b).join(', ')}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
+
+                            {/* Sơ đồ ghế */}
+                            {selectedRoute && formData.departureTime && formData.date && (
+                                <SeatPicker
+                                    date={formData.date}
+                                    departureTime={formData.departureTime}
+                                    routeName={`${selectedRoute.from} - ${selectedRoute.to}`}
+                                    maxSeats={10}
+                                    selectedSeats={selectedSeats}
+                                    onChange={setSelectedSeats}
+                                />
+                            )}
 
                             {/* Tổng tiền (Read-only) */}
                             <div>

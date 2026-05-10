@@ -46,6 +46,7 @@ const createBookingSchema = z.object({
     date: z.string().min(1, 'Date is required'),
     departureTime: z.string().min(1, 'Departure time is required'),
     seats: z.number().int().min(1).max(10),
+    selectedSeats: z.array(z.number().int().min(1).max(28)).optional(), // ghế cụ thể từ SeatPicker
     userId: z.string().optional(), // Nếu user đã đăng nhập
 });
 
@@ -215,6 +216,7 @@ export async function POST(request: NextRequest) {
             totalPrice,
             route: `${route.from} → ${route.to}`,
             notes: booking.notes ?? null,
+            selectedSeats: data.selectedSeats,
         }).catch(err => console.error('[TongHop] Failed to send:', err));
 
         // 10. Return response with booking info and QR codes
@@ -273,6 +275,7 @@ async function sendToTongHop(bookingData: {
     totalPrice: number;
     route: string;
     notes: string | null;
+    selectedSeats?: number[];
 }) {
     // URL của hệ thống Tổng Hợp (vocucphuong-internal)
     const TONGHOP_URL = process.env.TONGHOP_URL || 'http://localhost:3001';
