@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { BookingRepository } from '@/lib/repositories/booking-repository';
+import { BookingRepository, PaymentRepository } from '@/lib/repositories/booking-repository';
 import { z } from 'zod';
 
 const checkinSchema = z.object({
@@ -73,19 +73,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Kiểm tra trạng thái vé (phải đã thanh toán hoặc đã xác nhận)
-    if (booking.status !== 'PAID' && booking.status !== 'CONFIRMED') {
+    // Chỉ không cho check-in vé đã hủy hoặc đã hoàn thành
+    if (booking.status === 'CANCELLED') {
       return NextResponse.json(
         {
-          error: `Không thể check-in vé có trạng thái ${booking.status}. Vé phải có trạng thái PAID hoặc CONFIRMED.`,
-          booking: {
-            bookingCode: booking.bookingCode,
-            customerName: booking.customerName,
-            status: booking.status,
-          },
+          error: 'Vé này đã bị hủy, không thể check-in.',
+          booking: { bookingCode: booking.bookingCode, customerName: booking.customerName, status: booking.status },
         },
         { status: 400 }
       );
+    }
+
+    // Nếu vé đang PENDING → tự động chuyển sang PAID (thu tiền mặt khi lên xe)
+    if (booking.status === 'PENDING') {
+      await BookingRepository.updateStatus(booking.id, 'PAID');
+      // Cập nhật payment nếu có
+      try {
+        const payment = await PaymentRepository.findByBookingId(booking.id);
+        if (payment) {
+          await PaymentRepository.updateStatus(booking.id, 'COMPLETED', `CASH_CHECKIN_${Date.now()}`);
+        }
+      } catch {}
     }
 
     // Thực hiện check-in

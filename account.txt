@@ -1,2 +1,0 @@
-Username: admin, Password: admin123
-Username: nv_andong, Password: nv123456

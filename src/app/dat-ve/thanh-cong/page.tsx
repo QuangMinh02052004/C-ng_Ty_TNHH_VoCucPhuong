@@ -460,115 +460,29 @@ function BookingSuccessContent() {
                         </div>
                     </div>
 
-                    {/* QR Codes - Hide when printing */}
-                    {bookingData.qrCodes && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 no-print">
-                            {/* Ticket QR */}
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <span className="text-xl">🎫</span>
-                                    Mã QR vé xe
-                                </h3>
-                                <div className="flex justify-center mb-4 bg-gray-50 p-6 rounded-lg">
-                                    {bookingData.qrCodes.ticket && (
-                                        <div className="mb-6 text-center border-t border-gray-300 pt-4">
-                                            <p className="text-sm text-gray-600 mb-2">Mã QR vé xe</p>
-                                            <Image
-                                                src={bookingData.qrCodes.ticket}
-                                                alt="QR Code vé xe"
-                                                width={150}
-                                                height={150}
-                                                className="mx-auto border-2 border-gray-300 filter grayscale contrast-200"
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                                <p className="text-sm text-gray-600 text-center">
-                                    Vui lòng xuất trình mã này khi lên xe
-                                </p>
-                            </div>
-
-                                    {/* Payment QR */}
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                    <span className="text-xl">💳</span>
-                                    Mã QR thanh toán
-                                </h3>
-
-                                {/* Payment Status Badge */}
-                                {bookingData.status === 'PAID' ? (
-                                    <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                                        <p className="text-green-800 font-semibold flex items-center justify-center gap-2">
-                                            <span className="text-2xl">✅</span>
-                                            Đã thanh toán
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                                        <p className="text-yellow-800 font-semibold flex items-center justify-center gap-2">
-                                            <span className="text-2xl">⏳</span>
-                                            Chờ thanh toán
-                                        </p>
-                                    </div>
-                                )}
-
-                                <div className="flex justify-center mb-4 bg-gray-50 p-6 rounded-lg">
-                                    {bookingData.qrCodes.payment && (
-                                        <Image
-                                            src={bookingData.qrCodes.payment}
-                                            alt="QR Code thanh toán"
-                                            width={200}
-                                            height={200}
-                                            className="border-4 border-white shadow-md"
-                                        />
-                                    )}
-                                </div>
-                                <p className="text-sm text-gray-600 text-center mb-2">
-                                    Quét mã QR để thanh toán
-                                </p>
-                                <p className="text-xs text-gray-500 text-center mb-4">
-                                    (VNPay / MoMo / Chuyển khoản ngân hàng)
-                                </p>
-
-                                {/* Manual check button */}
-                                {bookingData.status !== 'PAID' && (
-                                    <button
-                                        onClick={handleManualCheck}
-                                        disabled={checkingPayment}
-                                        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                    >
-                                        {checkingPayment ? 'Đang kiểm tra...' : '🔄 Kiểm tra thanh toán'}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Payment Status Info */}
-                    {bookingData.status !== 'PAID' && (
-                        <div className="bg-blue-50 rounded-xl border border-blue-200 p-6 mb-6 no-print">
-                            <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                <span className="text-xl">💳</span>
-                                Thanh toán
+                    {/* Ticket QR - Hide when printing */}
+                    {bookingData.qrCodes?.ticket && (
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6 no-print text-center">
+                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center justify-center gap-2">
+                                <span className="text-xl">🎫</span>
+                                Mã QR vé xe
                             </h3>
-                            <div className="space-y-2 text-sm text-gray-700">
-                                <p className="flex items-start gap-2">
-                                    <span className="text-blue-600">•</span>
-                                    <span>Quét mã QR bên trên để thanh toán</span>
-                                </p>
-                                <p className="flex items-start gap-2">
-                                    <span className="text-blue-600">•</span>
-                                    <span><strong>Hệ thống tự động kiểm tra</strong> thanh toán mỗi 5 giây</span>
-                                </p>
-                                <p className="flex items-start gap-2">
-                                    <span className="text-blue-600">•</span>
-                                    <span>Sau khi chuyển tiền, bạn sẽ nhận được <strong>thông báo ngay lập tức</strong></span>
-                                </p>
-                                <p className="flex items-start gap-2">
-                                    <span className="text-blue-600">•</span>
-                                    <span>Hoặc nhấn nút <strong>"🔄 Kiểm tra thanh toán"</strong> để kiểm tra thủ công</span>
-                                </p>
+                            <div className="flex justify-center mb-3 bg-gray-50 p-4 rounded-lg inline-block mx-auto">
+                                <Image
+                                    src={bookingData.qrCodes.ticket}
+                                    alt="QR Code vé xe"
+                                    width={160}
+                                    height={160}
+                                    className="mx-auto border-4 border-white shadow-md rounded-lg"
+                                />
                             </div>
+                            <p className="text-sm text-gray-500 mt-2">Xuất trình mã này khi lên xe</p>
+                            <a
+                                href={`/ve/${bookingData.bookingCode}`}
+                                className="inline-block mt-3 px-5 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition"
+                            >
+                                Xem & tải vé
+                            </a>
                         </div>
                     )}
 

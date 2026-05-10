@@ -1,6 +1,6 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
 
@@ -20,321 +20,239 @@ interface BookingInfo {
   departureTime: string
   seats: number
   totalPrice: number
-  bus: {
-    licensePlate: string
-    busType: string
-  } | null
+  bus: { licensePlate: string; busType: string } | null
   status: string
   checkedIn: boolean
   checkedInAt: string | null
   qrCode: string | null
-  payment: {
-    method: string
-    status: string
-    paidAt: string | null
-  } | null
+  payment: { method: string; status: string; paidAt: string | null } | null
   createdAt: string
 }
 
-export default function TicketViewPage() {
+const STATUS_CONFIG: Record<string, { label: string; bg: string; text: string; border: string }> = {
+  PAID:      { label: 'Đã thanh toán', bg: 'bg-green-50',  text: 'text-green-700', border: 'border-green-400' },
+  CONFIRMED: { label: 'Đã xác nhận',  bg: 'bg-blue-50',   text: 'text-blue-700',  border: 'border-blue-400'  },
+  PENDING:   { label: 'Chờ xác nhận', bg: 'bg-amber-50',  text: 'text-amber-700', border: 'border-amber-400' },
+  CANCELLED: { label: 'Đã hủy',       bg: 'bg-red-50',    text: 'text-red-700',   border: 'border-red-400'   },
+  COMPLETED: { label: 'Hoàn thành',   bg: 'bg-gray-50',   text: 'text-gray-700',  border: 'border-gray-400'  },
+}
+
+export default function TicketPage() {
   const params = useParams()
   const bookingCode = params.bookingCode as string
   const [booking, setBooking] = useState<BookingInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const ticketRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (bookingCode) {
-      fetchBooking()
-    }
+    if (bookingCode) fetchBooking()
   }, [bookingCode])
 
   const fetchBooking = async () => {
     try {
       setLoading(true)
-      setError(null)
-
-      const response = await fetch(`/api/bookings/${bookingCode}`)
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('Không tìm thấy vé với mã này')
-        }
-        throw new Error('Lỗi khi tải thông tin vé')
-      }
-
-      const data = await response.json()
+      const res = await fetch(`/api/bookings/${bookingCode}`)
+      if (!res.ok) throw new Error(res.status === 404 ? 'Không tìm thấy vé' : 'Lỗi tải vé')
+      const data = await res.json()
       setBooking(data.booking)
     } catch (err: any) {
-      console.error('Error fetching booking:', err)
-      setError(err.message || 'Không thể tải thông tin vé')
+      setError(err.message)
     } finally {
       setLoading(false)
     }
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'PAID': return 'bg-green-100 text-green-800 border-green-300'
-      case 'CONFIRMED': return 'bg-blue-100 text-blue-800 border-blue-300'
-      case 'PENDING': return 'bg-yellow-100 text-yellow-800 border-yellow-300'
-      case 'CANCELLED': return 'bg-red-100 text-red-800 border-red-300'
-      case 'COMPLETED': return 'bg-gray-100 text-gray-800 border-gray-300'
-      default: return 'bg-gray-100 text-gray-800 border-gray-300'
-    }
+  const handleDownload = () => {
+    window.print()
   }
 
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'PAID': return 'Đã thanh toán'
-      case 'CONFIRMED': return 'Đã xác nhận'
-      case 'PENDING': return 'Chờ thanh toán'
-      case 'CANCELLED': return 'Đã hủy'
-      case 'COMPLETED': return 'Hoàn thành'
-      default: return status
-    }
+  const fmtDate = (d: string) => {
+    try {
+      const dt = new Date(d)
+      return dt.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric' })
+    } catch { return d }
   }
 
-  const getPaymentMethodLabel = (method: string) => {
-    switch (method) {
-      case 'CASH': return 'Tiền mặt'
-      case 'BANK_TRANSFER': return 'Chuyển khoản'
-      case 'QRCODE': return 'QR Code'
-      case 'VNPAY': return 'VNPay'
-      case 'MOMO': return 'MoMo'
-      default: return method
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-sky-50 flex items-center justify-center p-4">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 font-medium">Đang tải thông tin vé...</p>
-        </div>
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600 mx-auto mb-3" />
+        <p className="text-gray-500 text-sm">Đang tải vé...</p>
       </div>
-    )
-  }
+    </div>
+  )
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-sky-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
-          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Không tìm thấy vé</h2>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <a
-            href="/"
-            className="inline-block px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold"
-          >
-            Về trang chủ
-          </a>
+  if (error || !booking) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="bg-white rounded-2xl shadow-lg max-w-sm w-full p-8 text-center">
+        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </div>
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Không tìm thấy vé</h2>
+        <p className="text-gray-500 text-sm mb-5">{error}</p>
+        <a href="/" className="px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-semibold text-sm">
+          Về trang chủ
+        </a>
       </div>
-    )
-  }
+    </div>
+  )
 
-  if (!booking) {
-    return null
-  }
+  const st = STATUS_CONFIG[booking.status] || STATUS_CONFIG.PENDING
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-sky-50 to-blue-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-block p-3 bg-blue-600 rounded-2xl mb-4">
-            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+    <>
+      {/* Print styles */}
+      <style jsx global>{`
+        @media print {
+          body * { visibility: hidden !important; }
+          #ticket-print, #ticket-print * { visibility: visible !important; }
+          #ticket-print {
+            position: fixed !important; top: 0 !important; left: 0 !important;
+            width: 100% !important; max-width: none !important;
+            box-shadow: none !important; border-radius: 0 !important;
+            margin: 0 !important; padding: 16px !important;
+          }
+          .no-print { display: none !important; }
+          @page { size: A5 portrait; margin: 8mm; }
+        }
+      `}</style>
+
+      <div className="min-h-screen bg-gray-100 py-6 px-4">
+        {/* Action buttons */}
+        <div className="max-w-md mx-auto mb-4 flex gap-3 no-print">
+          <button
+            onClick={handleDownload}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-semibold text-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Thông tin vé xe</h1>
-          <p className="text-gray-600">Mã vé: <span className="font-bold text-blue-600">{booking.bookingCode}</span></p>
+            Tải / In vé
+          </button>
+          <button
+            onClick={() => { navigator.clipboard.writeText(booking.bookingCode); }}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition font-semibold text-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+            </svg>
+            Sao chép mã
+          </button>
         </div>
 
-        {/* Main Ticket Card */}
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden mb-6">
-          {/* Route Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-sky-600 text-white p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex-1">
-                <p className="text-sm opacity-90 mb-1">Điểm đi</p>
-                <p className="text-2xl font-bold">{booking.route.from}</p>
-              </div>
-              <div className="px-4">
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </div>
-              <div className="flex-1 text-right">
-                <p className="text-sm opacity-90 mb-1">Điểm đến</p>
-                <p className="text-2xl font-bold">{booking.route.to}</p>
-              </div>
+        {/* Ticket */}
+        <div id="ticket-print" ref={ticketRef} className="max-w-md mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
+          {/* Company Header */}
+          <div className="bg-blue-600 text-white px-5 py-4 text-center">
+            <p className="font-bold text-lg tracking-wide">CÔNG TY TNHH VÕ CÚC PHƯƠNG</p>
+            <p className="text-blue-200 text-xs mt-0.5">Hotline: 02519 999 975</p>
+          </div>
+
+          {/* Route banner */}
+          <div className="bg-blue-50 px-5 py-3 flex items-center justify-between border-b border-blue-100">
+            <div className="text-center flex-1">
+              <p className="text-xs text-gray-400 mb-0.5">Điểm đi</p>
+              <p className="font-bold text-gray-900 text-base">{booking.route.from}</p>
             </div>
-            <div className="flex items-center justify-center gap-6 text-sm opacity-90">
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {booking.route.duration}
-              </span>
-              {booking.route.distance && (
-                <span className="flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                  </svg>
-                  {booking.route.distance}
-                </span>
-              )}
+            <div className="px-3 text-blue-500">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </div>
+            <div className="text-center flex-1">
+              <p className="text-xs text-gray-400 mb-0.5">Điểm đến</p>
+              <p className="font-bold text-gray-900 text-base">{booking.route.to}</p>
             </div>
           </div>
 
-          {/* Ticket Details */}
-          <div className="p-6 space-y-6">
-            {/* Status Badge */}
-            <div className="flex items-center justify-between">
-              <span className={`px-4 py-2 rounded-full text-sm font-bold border-2 ${getStatusColor(booking.status)}`}>
-                {getStatusLabel(booking.status)}
-              </span>
-              {booking.checkedIn && (
-                <span className="flex items-center gap-2 text-green-600 font-semibold">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  Đã check-in
+          {/* Ticket body */}
+          <div className="px-5 py-4">
+            {/* Code + Status */}
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="text-xs text-gray-400">Mã vé</p>
+                <p className="font-bold text-gray-900 font-mono text-base">{booking.bookingCode}</p>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${st.bg} ${st.text} ${st.border}`}>
+                  {st.label}
                 </span>
-              )}
-            </div>
-
-            {/* Customer Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                <p className="text-sm text-blue-600 font-semibold mb-1">Họ và tên</p>
-                <p className="text-lg font-bold text-gray-900">{booking.customerName}</p>
-              </div>
-              <div className="bg-sky-50 p-4 rounded-xl border border-sky-100">
-                <p className="text-sm text-sky-600 font-semibold mb-1">Số điện thoại</p>
-                <p className="text-lg font-bold text-gray-900">{booking.customerPhone}</p>
-              </div>
-            </div>
-
-            {/* Trip Details */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 p-4 rounded-xl">
-                <p className="text-sm text-gray-600 mb-1">Ngày đi</p>
-                <p className="text-lg font-bold text-gray-900">
-                  {new Date(booking.date).toLocaleDateString('vi-VN', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-xl">
-                <p className="text-sm text-gray-600 mb-1">Giờ xuất bến</p>
-                <p className="text-lg font-bold text-gray-900">{booking.departureTime}</p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-xl">
-                <p className="text-sm text-gray-600 mb-1">Số ghế</p>
-                <p className="text-lg font-bold text-gray-900">{booking.seats} ghế</p>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-xl">
-                <p className="text-sm text-gray-600 mb-1">Loại xe</p>
-                <p className="text-lg font-bold text-gray-900">{booking.route.busType}</p>
-              </div>
-            </div>
-
-            {/* Bus Info */}
-            {booking.bus && (
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-xl border border-gray-200">
-                <p className="text-sm text-gray-600 mb-2">Thông tin xe</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gray-200 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                {booking.checkedIn && (
+                  <span className="flex items-center gap-1 text-xs text-green-600 font-semibold">
+                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900 text-lg">{booking.bus.licensePlate}</p>
-                    <p className="text-sm text-gray-600">{booking.bus.busType}</p>
-                  </div>
-                </div>
+                    Đã lên xe
+                  </span>
+                )}
               </div>
-            )}
+            </div>
 
-            {/* Price */}
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-xl border-2 border-green-200">
-              <div className="flex items-center justify-between">
-                <p className="text-lg text-green-700 font-semibold">Tổng tiền</p>
-                <p className="text-3xl font-bold text-green-600">
-                  {booking.totalPrice.toLocaleString('vi-VN')} ₫
-                </p>
+            {/* Key info grid */}
+            <div className="grid grid-cols-3 gap-2 mb-4 bg-gray-50 rounded-xl p-3">
+              <div className="text-center">
+                <p className="text-xs text-gray-400 mb-0.5">Ngày đi</p>
+                <p className="font-bold text-gray-900 text-sm">{fmtDate(booking.date)}</p>
               </div>
-              {booking.payment && (
-                <div className="mt-3 pt-3 border-t border-green-200">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-green-700">Phương thức: {getPaymentMethodLabel(booking.payment.method)}</span>
-                    {booking.payment.status === 'COMPLETED' && (
-                      <span className="flex items-center gap-1 text-green-600 font-semibold">
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        Đã thanh toán
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
+              <div className="text-center border-x border-gray-200">
+                <p className="text-xs text-gray-400 mb-0.5">Giờ</p>
+                <p className="font-bold text-blue-600 text-lg">{booking.departureTime}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-gray-400 mb-0.5">Ghế</p>
+                <p className="font-bold text-gray-900 text-sm">{booking.seats} ghế</p>
+              </div>
+            </div>
+
+            {/* Customer */}
+            <div className="flex items-center gap-3 mb-4 pb-4 border-b border-dashed border-gray-200">
+              <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold text-sm flex items-center justify-center flex-shrink-0">
+                {booking.customerName.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <p className="font-semibold text-gray-900">{booking.customerName}</p>
+                <p className="text-sm text-gray-500">{booking.customerPhone}</p>
+              </div>
+              <div className="ml-auto text-right">
+                <p className="text-xs text-gray-400">Tổng tiền</p>
+                <p className="font-bold text-blue-600 text-lg">{booking.totalPrice.toLocaleString('vi-VN')}đ</p>
+              </div>
             </div>
 
             {/* QR Code */}
-            {booking.qrCode && (
-              <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 text-center">
-                <p className="text-sm text-gray-600 font-semibold mb-4">Mã QR check-in</p>
-                <div className="inline-block p-4 bg-white rounded-xl shadow-lg">
-                  <Image
-                    src={booking.qrCode}
-                    alt="QR Code"
-                    width={200}
-                    height={200}
-                    className="mx-auto"
-                  />
+            <div className="text-center pb-3">
+              <p className="text-xs text-gray-400 mb-3">Quét mã khi lên xe</p>
+              {booking.qrCode ? (
+                <Image
+                  src={booking.qrCode}
+                  alt="QR vé xe"
+                  width={160}
+                  height={160}
+                  className="mx-auto border-4 border-white shadow-md rounded-lg"
+                />
+              ) : (
+                <div className="w-40 h-40 mx-auto bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed border-gray-300">
+                  <span className="text-xs text-gray-400 text-center px-3">{booking.bookingCode}</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-4">
-                  Xuất trình mã này khi lên xe để check-in
-                </p>
-              </div>
-            )}
+              )}
+              <p className="text-xs text-gray-400 mt-2">Xuất trình cho nhân viên khi lên xe</p>
+            </div>
           </div>
-        </div>
 
-        {/* Footer */}
-        <div className="text-center space-y-4">
-          <p className="text-sm text-gray-600">
-            Đã đặt vé lúc: {new Date(booking.createdAt).toLocaleString('vi-VN')}
-          </p>
-          <div className="flex gap-3 justify-center">
-            <a
-              href="/"
-              className="px-6 py-3 bg-white text-blue-600 border-2 border-blue-600 rounded-xl hover:bg-blue-50 transition-colors font-semibold"
-            >
-              Về trang chủ
-            </a>
-            <a
-              href={`tel:${booking.customerPhone}`}
-              className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold"
-            >
-              Liên hệ hỗ trợ
-            </a>
+          {/* Notes */}
+          <div className="bg-amber-50 border-t border-amber-100 px-5 py-3">
+            <p className="text-xs text-amber-800 font-semibold mb-1">Lưu ý:</p>
+            <ul className="text-xs text-amber-700 space-y-0.5">
+              <li>• Có mặt tại bến <strong>trước 15 phút</strong> so với giờ xuất bến</li>
+              <li>• Mang theo CMND/CCCD khi lên xe</li>
+              <li>• Liên hệ hotline <strong>02519 999 975</strong> nếu cần hỗ trợ</li>
+            </ul>
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }

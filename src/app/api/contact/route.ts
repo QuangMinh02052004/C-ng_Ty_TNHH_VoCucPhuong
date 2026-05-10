@@ -61,6 +61,27 @@ export async function POST(request: NextRequest) {
         // 3. Log thành công
         console.log(`✅ [CONTACT] Email sent from ${name} (${email})`);
 
+        // 4. Tạo ticket CSKH trong hệ thống TongHop (await - Vercel serverless terminates on return)
+        const msgContent = subject ? `[${subject}] ${message}` : message;
+        try {
+            await fetch('https://vocucphuongmanage.vercel.app/api/tong-hop/customer-requests', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'inquiry',
+                    name,
+                    phone: phone || '',
+                    email: email || '',
+                    bookingRef: '',
+                    message: msgContent,
+                    assignedTo: '',
+                    source: 'website',
+                }),
+            });
+        } catch (err) {
+            console.warn('[CSKH] Failed to create ticket:', err);
+        }
+
         return NextResponse.json({
             success: true,
             message: 'Tin nhắn của bạn đã được gửi thành công. Chúng tôi sẽ phản hồi trong thời gian sớm nhất!',

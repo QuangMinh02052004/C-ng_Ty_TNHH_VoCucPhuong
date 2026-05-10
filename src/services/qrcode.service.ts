@@ -96,13 +96,8 @@ export async function generateTicketQRCode({
     seats,
 }: GenerateTicketQRParams): Promise<string> {
     try {
-        // Tạo URL đến trang xem vé công khai
-        // Khi quét QR code bằng camera, sẽ tự động mở trang web này
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-        const ticketUrl = `${baseUrl}/ve/${bookingCode}`;
-
-        // Tạo QR code chứa URL
-        const qrCodeDataURL = await QRCode.toDataURL(ticketUrl, {
+        // Chỉ mã hóa booking code để check-in dễ dàng
+        const qrCodeDataURL = await QRCode.toDataURL(bookingCode, {
             errorCorrectionLevel: 'H',
             type: 'image/png',
             width: 300,
