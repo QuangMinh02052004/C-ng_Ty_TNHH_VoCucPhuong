@@ -7,8 +7,10 @@ import Footer from './Footer';
 export default function PublicShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname() || '';
     const isAdmin = pathname.startsWith('/admin');
+    const isDriver = pathname.startsWith('/driver');
 
-    if (isAdmin) {
+    // Trang admin và trang tài xế dùng layout riêng — không hiện Header/Footer công khai
+    if (isAdmin || isDriver) {
         return <>{children}</>;
     }
 

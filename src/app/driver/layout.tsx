@@ -16,8 +16,32 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
     const [error, setError] = useState<string | null>(null);
     const [vehicles, setVehicles] = useState<Array<{ code: string; type?: string }>>([]);
     const [loadingVehicles, setLoadingVehicles] = useState(false);
+    const [search, setSearch] = useState('');
 
     const TONGHOP_URL = process.env.NEXT_PUBLIC_TONGHOP_URL || 'https://vocucphuongmanage.vercel.app';
+
+    // Tự nhận diện biển số thật dù người nhập dữ liệu có nhầm code/type
+    // Plate VN: bắt đầu 2 chữ số + chữ cái (vd "60B04669", "60S-086.12")
+    const detectPlate = (v: { code: string; type?: string }) => {
+        const isPlate = (s?: string) => !!s && /\d{2}\s?[A-Z]/i.test(s);
+        if (isPlate(v.code)) return { plate: v.code.toUpperCase(), desc: v.type || '' };
+        if (isPlate(v.type)) return { plate: (v.type as string).toUpperCase(), desc: v.code };
+        return { plate: v.code.toUpperCase(), desc: v.type || '' };
+    };
+
+    const vehicleOptions = vehicles
+        .map(v => detectPlate(v))
+        .filter(o => /\d/.test(o.plate))  // tối thiểu phải có số trong "biển số"
+        .filter((o, i, arr) => arr.findIndex(x => x.plate === o.plate) === i)  // unique
+        .sort((a, b) => a.plate.localeCompare(b.plate));
+
+    const filteredOptions = (() => {
+        const q = search.trim().toLowerCase();
+        if (!q) return vehicleOptions;
+        return vehicleOptions.filter(o =>
+            o.plate.toLowerCase().includes(q) || o.desc.toLowerCase().includes(q)
+        );
+    })();
 
     useEffect(() => {
         if (status === 'unauthenticated') {
@@ -155,37 +179,68 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
                             <label className="block text-xs uppercase tracking-wider text-gray-600 font-semibold">
                                 Chọn xe đang chạy
                             </label>
+
+                            {/* Ô đã chọn / nhập */}
+                            <input
+                                type="text"
+                                value={plateInput}
+                                onChange={e => setPlateInput(e.target.value.toUpperCase())}
+                                placeholder="60S-086.12"
+                                autoFocus
+                                className="w-full px-3 py-2.5 text-base border border-gray-300 rounded text-gray-900 uppercase tracking-wider font-bold focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                            />
+
                             {loadingVehicles ? (
-                                <div className="text-sm text-gray-500 py-2">Đang tải danh sách xe...</div>
-                            ) : vehicles.length > 0 ? (
-                                <select
-                                    value={plateInput}
-                                    onChange={e => setPlateInput(e.target.value.toUpperCase())}
-                                    autoFocus
-                                    className="w-full px-3 py-2.5 text-base border border-gray-300 rounded text-gray-900 uppercase tracking-wider font-semibold focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                                >
-                                    <option value="">-- Chọn biển số --</option>
-                                    {vehicles.map(v => (
-                                        <option key={v.code} value={v.code}>
-                                            {v.code}{v.type ? ` — ${v.type}` : ''}
-                                        </option>
-                                    ))}
-                                </select>
-                            ) : (
-                                <>
-                                    <input
-                                        type="text"
-                                        value={plateInput}
-                                        onChange={e => setPlateInput(e.target.value.toUpperCase())}
-                                        placeholder="60S-086.12"
-                                        autoFocus
-                                        className="w-full px-3 py-2.5 text-base border border-gray-300 rounded text-gray-900 uppercase tracking-wider font-semibold focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                                    />
-                                    <p className="text-[11px] text-gray-500">
-                                        Chưa tải được danh sách xe từ Tổng Hợp, vui lòng nhập biển số xe đang chạy.
+                                <div className="text-sm text-gray-500 py-2 text-center">Đang tải danh sách xe...</div>
+                            ) : vehicleOptions.length > 0 ? (
+                                <div>
+                                    {/* Tìm kiếm */}
+                                    <div className="relative mt-2">
+                                        <input
+                                            type="text"
+                                            value={search}
+                                            onChange={e => setSearch(e.target.value)}
+                                            placeholder="Tìm biển số..."
+                                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                                        />
+                                    </div>
+
+                                    {/* Danh sách lựa chọn */}
+                                    <div className="mt-2 max-h-60 overflow-y-auto border border-gray-200 rounded divide-y divide-gray-100">
+                                        {filteredOptions.length === 0 ? (
+                                            <div className="text-sm text-gray-500 py-4 text-center">
+                                                Không khớp xe nào với &quot;{search}&quot;
+                                            </div>
+                                        ) : (
+                                            filteredOptions.map(o => (
+                                                <button
+                                                    key={o.plate}
+                                                    type="button"
+                                                    onClick={() => { setPlateInput(o.plate); setSearch(''); }}
+                                                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                                                        plateInput === o.plate
+                                                            ? 'bg-sky-50 text-sky-800'
+                                                            : 'hover:bg-gray-50 text-gray-800'
+                                                    }`}
+                                                >
+                                                    <span className="font-mono font-bold tracking-wider">{o.plate}</span>
+                                                    {o.desc && (
+                                                        <span className="text-xs text-gray-500 ml-2">— {o.desc}</span>
+                                                    )}
+                                                </button>
+                                            ))
+                                        )}
+                                    </div>
+                                    <p className="text-[11px] text-gray-500 mt-1">
+                                        {vehicleOptions.length} xe trong hệ thống. Gõ để lọc nhanh.
                                     </p>
-                                </>
+                                </div>
+                            ) : (
+                                <p className="text-[11px] text-gray-500">
+                                    Chưa có biển số xe nào trong hệ thống. Vui lòng liên hệ quản lý hoặc nhập tạm biển số ở ô trên.
+                                </p>
                             )}
+
                             {error && <p className="text-sm text-red-600">{error}</p>}
                         </div>
                         <div className="px-5 py-3 border-t border-gray-200 flex justify-end gap-2">

@@ -64,6 +64,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <Link href="/admin/pickup-stations" className="block px-2 py-1.5 text-sm text-gray-700 rounded hover:bg-gray-100">
                             {sidebarOpen ? 'Trạm đón dọc đường' : 'P'}
                         </Link>
+                        <Link href="/admin/vehicles" className="block px-2 py-1.5 text-sm text-gray-700 rounded hover:bg-gray-100">
+                            {sidebarOpen ? 'Quản lý xe' : 'X'}
+                        </Link>
                         <Link href="/admin/users" className="block px-2 py-1.5 text-sm text-gray-700 rounded hover:bg-gray-100">
                             {sidebarOpen ? 'Người dùng' : 'U'}
                         </Link>
