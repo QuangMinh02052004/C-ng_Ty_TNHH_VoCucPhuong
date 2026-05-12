@@ -151,23 +151,33 @@ export default function Header() {
                                 {/* Dropdown Menu */}
                                 {dropdownOpen && (
                                     <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2">
-                                        <Link
-                                            href="/profile"
-                                            onClick={() => setDropdownOpen(false)}
-                                            className="flex items-center gap-3 px-4 py-2 hover:bg-sky-50 transition-colors"
-                                        >
-                                            
-                                            <span className="text-gray-700">Tài khoản của tôi</span>
-                                        </Link>
+                                        {session.user.role === 'DRIVER' ? (
+                                            <Link
+                                                href="/driver"
+                                                onClick={() => setDropdownOpen(false)}
+                                                className="flex items-center gap-3 px-4 py-2 hover:bg-sky-50 transition-colors"
+                                            >
+                                                <span className="text-sky-700 font-semibold">Quay lại trang quét vé</span>
+                                            </Link>
+                                        ) : (
+                                            <>
+                                                <Link
+                                                    href="/profile"
+                                                    onClick={() => setDropdownOpen(false)}
+                                                    className="flex items-center gap-3 px-4 py-2 hover:bg-sky-50 transition-colors"
+                                                >
+                                                    <span className="text-gray-700">Tài khoản của tôi</span>
+                                                </Link>
 
-                                        <Link
-                                            href="/my-bookings"
-                                            onClick={() => setDropdownOpen(false)}
-                                            className="flex items-center gap-3 px-4 py-2 hover:bg-sky-50 transition-colors"
-                                        >
-                                            
-                                            <span className="text-gray-700">Vé của tôi</span>
-                                        </Link>
+                                                <Link
+                                                    href="/my-bookings"
+                                                    onClick={() => setDropdownOpen(false)}
+                                                    className="flex items-center gap-3 px-4 py-2 hover:bg-sky-50 transition-colors"
+                                                >
+                                                    <span className="text-gray-700">Vé của tôi</span>
+                                                </Link>
+                                            </>
+                                        )}
 
                                         {(session.user.role === 'ADMIN' || session.user.role === 'STAFF') && (
                                             <>
@@ -177,7 +187,6 @@ export default function Header() {
                                                     onClick={() => setDropdownOpen(false)}
                                                     className="flex items-center gap-3 px-4 py-2 hover:bg-red-50 transition-colors"
                                                 >
-                                                    
                                                     <span className="text-red-600 font-semibold">Quản trị</span>
                                                 </Link>
                                             </>
@@ -189,7 +198,6 @@ export default function Header() {
                                             onClick={handleLogout}
                                             className="flex items-center gap-3 px-4 py-2 hover:bg-red-50 transition-colors w-full text-left"
                                         >
-                                            
                                             <span className="text-red-600">Đăng xuất</span>
                                         </button>
                                     </div>
@@ -303,22 +311,32 @@ export default function Header() {
                                                     </div>
                                                 </div>
 
-                                                <Link
-                                                    href="/profile"
-                                                    onClick={() => setMobileMenuOpen(false)}
-                                                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
-                                                >
-                                                    
-                                                    <span className="text-gray-700 font-medium">Tài khoản của tôi</span>
-                                                </Link>
-                                                <Link
-                                                    href="/my-bookings"
-                                                    onClick={() => setMobileMenuOpen(false)}
-                                                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
-                                                >
-                                                    
-                                                    <span className="text-gray-700 font-medium">Vé của tôi</span>
-                                                </Link>
+                                                {session.user.role === 'DRIVER' ? (
+                                                    <Link
+                                                        href="/driver"
+                                                        onClick={() => setMobileMenuOpen(false)}
+                                                        className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
+                                                    >
+                                                        <span className="text-sky-700 font-semibold">Quay lại trang quét vé</span>
+                                                    </Link>
+                                                ) : (
+                                                    <>
+                                                        <Link
+                                                            href="/profile"
+                                                            onClick={() => setMobileMenuOpen(false)}
+                                                            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
+                                                        >
+                                                            <span className="text-gray-700 font-medium">Tài khoản của tôi</span>
+                                                        </Link>
+                                                        <Link
+                                                            href="/my-bookings"
+                                                            onClick={() => setMobileMenuOpen(false)}
+                                                            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-sky-50 transition-colors"
+                                                        >
+                                                            <span className="text-gray-700 font-medium">Vé của tôi</span>
+                                                        </Link>
+                                                    </>
+                                                )}
 
                                                 {(session.user.role === 'ADMIN' || session.user.role === 'STAFF') && (
                                                     <Link
