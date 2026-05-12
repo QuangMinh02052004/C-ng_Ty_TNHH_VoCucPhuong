@@ -61,7 +61,7 @@ export default function SeatPicker({ date, departureTime, routeName, maxSeats, s
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [locks, setLocks] = useState<Lock[]>([]);
     const [error, setError] = useState<string | null>(null);
-    const [busy, setBusy] = useState(false);
+    const [busySeats, setBusySeats] = useState<Set<number>>(new Set());
     const [now, setNow] = useState(Date.now());
     const guestId = useRef<string>('');
 
@@ -115,11 +115,19 @@ export default function SeatPicker({ date, departureTime, routeName, maxSeats, s
             const allLocks: Lock[] = Array.isArray(lData) ? lData : [];
             const filteredLocks = allLocks.filter((l: any) => l.timeSlotId === timeSlot.id);
             setBookings(filteredBookings);
-            setLocks(filteredLocks);
+            // Giữ lại optimistic locks (id < 0) cho ghế đang busy — tránh nhấp nháy
+            setLocks(prev => {
+                const optimistic = prev.filter(l => l.id < 0 && busySeats.has(l.seatNumber));
+                const merged = [...filteredLocks];
+                for (const ol of optimistic) {
+                    if (!merged.find(m => m.seatNumber === ol.seatNumber)) merged.push(ol);
+                }
+                return merged;
+            });
         } catch (e) {
             // im lặng – polling lần sau retry
         }
-    }, [ready, timeSlot, tongHopDate, routeName]);
+    }, [ready, timeSlot, tongHopDate, routeName, busySeats]);
 
     useEffect(() => {
         if (!ready || !timeSlot) return;
@@ -142,8 +150,8 @@ export default function SeatPicker({ date, departureTime, routeName, maxSeats, s
         else lockByOther.set(l.seatNumber, l);
     }
 
-    const handleClick = async (num: number) => {
-        if (busy) return;
+    const handleClick = (num: number) => {
+        if (busySeats.has(num)) return;
         if (!timeSlot) {
             setError('Chưa sẵn sàng khung giờ. Vui lòng đợi 1 giây.');
             return;
@@ -158,52 +166,83 @@ export default function SeatPicker({ date, departureTime, routeName, maxSeats, s
         }
 
         setError(null);
-        setBusy(true);
-        try {
-            if (selectedSeats.includes(num)) {
-                // Bỏ chọn → DELETE lock (JSON body)
-                await fetch(`${TONGHOP_URL}/api/tong-hop/seat-locks/by-seat`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        timeSlotId: timeSlot.id,
-                        seatNumber: num,
-                        date: tongHopDate,
-                        route: routeName,
-                        lockedBy: guestId.current,
-                    }),
-                });
-                onChange(selectedSeats.filter(s => s !== num));
-            } else {
-                if (selectedSeats.length >= maxSeats) {
-                    setError(`Bạn chỉ được chọn tối đa ${maxSeats} ghế.`);
-                    return;
-                }
-                // Chọn → POST lock
-                const res = await fetch(`${TONGHOP_URL}/api/tong-hop/seat-locks`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        timeSlotId: timeSlot.id,
-                        seatNumber: num,
-                        lockedBy: guestId.current,
-                        date: tongHopDate,
-                        route: routeName,
-                    }),
-                });
-                if (!res.ok) {
+        const isDeselect = selectedSeats.includes(num);
+
+        if (!isDeselect && selectedSeats.length >= maxSeats) {
+            setError(`Bạn chỉ được chọn tối đa ${maxSeats} ghế.`);
+            return;
+        }
+
+        // Optimistic update — đổi state ngay để UI phản hồi tức thì
+        const nextSelected = isDeselect
+            ? selectedSeats.filter(s => s !== num)
+            : [...selectedSeats, num];
+        onChange(nextSelected);
+
+        // Đánh dấu seat đang gọi API (để chặn click lặp + có thể hiển thị spinner)
+        setBusySeats(prev => new Set(prev).add(num));
+
+        // Optimistic: thêm lock tạm vào state để hiện countdown ngay
+        if (!isDeselect) {
+            const optimisticLock: Lock = {
+                id: -num, // negative để biết là tạm
+                seatNumber: num,
+                lockedBy: guestId.current,
+                expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+            };
+            setLocks(prev => [...prev.filter(l => l.seatNumber !== num), optimisticLock]);
+        } else {
+            setLocks(prev => prev.filter(l => !(l.seatNumber === num && l.lockedBy === guestId.current)));
+        }
+
+        // API call chạy background — fire and forget với revert on error
+        const apiCall = isDeselect
+            ? fetch(`${TONGHOP_URL}/api/tong-hop/seat-locks/by-seat`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    timeSlotId: timeSlot.id,
+                    seatNumber: num,
+                    date: tongHopDate,
+                    route: routeName,
+                    lockedBy: guestId.current,
+                }),
+            })
+            : fetch(`${TONGHOP_URL}/api/tong-hop/seat-locks`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    timeSlotId: timeSlot.id,
+                    seatNumber: num,
+                    lockedBy: guestId.current,
+                    date: tongHopDate,
+                    route: routeName,
+                }),
+            });
+
+        apiCall
+            .then(async res => {
+                if (!res.ok && !isDeselect) {
                     const j = await res.json().catch(() => ({}));
                     setError(j.error || `Không khóa được ghế ${num}, có thể vừa bị người khác giữ.`);
-                    return;
+                    // Revert
+                    onChange(selectedSeats);
+                    setLocks(prev => prev.filter(l => l.id !== -num));
                 }
-                onChange([...selectedSeats, num]);
-            }
-            fetchState();
-        } catch (e) {
-            setError('Lỗi mạng khi giữ ghế. Vui lòng thử lại.');
-        } finally {
-            setBusy(false);
-        }
+                fetchState();
+            })
+            .catch(() => {
+                setError('Lỗi mạng khi giữ ghế. Vui lòng thử lại.');
+                onChange(selectedSeats); // revert
+                setLocks(prev => prev.filter(l => l.id !== -num));
+            })
+            .finally(() => {
+                setBusySeats(prev => {
+                    const n = new Set(prev);
+                    n.delete(num);
+                    return n;
+                });
+            });
     };
 
     if (!ready) {
@@ -240,7 +279,7 @@ export default function SeatPicker({ date, departureTime, routeName, maxSeats, s
                 key={num}
                 type="button"
                 onClick={() => handleClick(num)}
-                disabled={isBooked || !!otherLock || busy}
+                disabled={isBooked || !!otherLock || busySeats.has(num)}
                 className={`relative w-12 h-12 md:w-14 md:h-14 rounded-md text-sm font-semibold transition-colors ${cls}`}
                 title={
                     isBooked ? `Ghế ${num} - Đã đặt` :
