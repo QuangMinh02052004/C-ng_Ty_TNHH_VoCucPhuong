@@ -4,18 +4,35 @@ import { getToken } from 'next-auth/jwt';
 
 // Các path tài xế được phép truy cập (mọi path khác sẽ redirect về /driver)
 const DRIVER_ALLOWED = [
-    /^\/driver(\/.*)?$/,           // trang chính tài xế
-    /^\/api\/driver(\/.*)?$/,      // API tài xế
-    /^\/api\/auth(\/.*)?$/,        // NextAuth callbacks
-    /^\/auth\/(login|logout|error)(\/.*)?$/, // login/logout
-    /^\/api\/tong-hop\//,          // proxy gọi TongHop (vehicles, pickup-stations…)
+    /^\/driver(\/.*)?$/,
+    /^\/api\/driver(\/.*)?$/,
+    /^\/api\/auth(\/.*)?$/,
+    /^\/auth\/(login|logout|error)(\/.*)?$/,
+    /^\/api\/tong-hop\//,
 ];
 
 export async function middleware(request: NextRequest) {
     const path = request.nextUrl.pathname;
-    const token = await getToken({ req: request });
 
-    // Tài xế chỉ được phép ở các route trong DRIVER_ALLOWED
+    // Bỏ qua khi không có cookie để tránh thừa work
+    const hasNextAuthCookie = request.cookies.getAll().some(c =>
+        c.name.includes('next-auth.session-token')
+    );
+    if (!hasNextAuthCookie) {
+        return NextResponse.next();
+    }
+
+    let token;
+    try {
+        token = await getToken({
+            req: request,
+            secret: process.env.NEXTAUTH_SECRET,
+            secureCookie: process.env.NODE_ENV === 'production',
+        });
+    } catch {
+        return NextResponse.next();
+    }
+
     if (token?.role === 'DRIVER') {
         const isAllowed = DRIVER_ALLOWED.some(p => p.test(path));
         if (!isAllowed) {
@@ -27,6 +44,8 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-    // Match mọi request trừ static/_next/favicon (để middleware không can thiệp asset)
-    matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|gif|ico|webp)).*)'],
+    matcher: [
+        // Match mọi path TRỪ next internal + static asset files
+        '/((?!_next/|favicon.ico|.*\\.(?:png|jpg|jpeg|svg|gif|ico|webp|css|js)$).*)',
+    ],
 };

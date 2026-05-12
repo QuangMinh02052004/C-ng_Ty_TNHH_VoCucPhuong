@@ -136,7 +136,7 @@ export default function Header() {
                                     </div>
                                     <div className="text-left">
                                         <p className="text-sm font-semibold text-gray-800">{session.user.name}</p>
-                                        <p className="text-xs text-gray-500">{session.user.role === 'ADMIN' ? 'Quản trị' : session.user.role === 'STAFF' ? 'Nhân viên' : 'Khách hàng'}</p>
+                                        <p className="text-xs text-gray-500">{session.user.role === 'ADMIN' ? 'Quản trị' : session.user.role === 'STAFF' ? 'Nhân viên' : session.user.role === 'DRIVER' ? 'Tài xế' : 'Khách hàng'}</p>
                                     </div>
                                     <svg
                                         className={`w-4 h-4 text-gray-600 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
@@ -297,7 +297,7 @@ export default function Header() {
                                                         <div>
                                                             <p className="text-sm font-semibold text-gray-800">{session.user.name}</p>
                                                             <p className="text-xs text-gray-500">
-                                                                {session.user.role === 'ADMIN' ? 'Quản trị' : session.user.role === 'STAFF' ? 'Nhân viên' : 'Khách hàng'}
+                                                                {session.user.role === 'ADMIN' ? 'Quản trị' : session.user.role === 'STAFF' ? 'Nhân viên' : session.user.role === 'DRIVER' ? 'Tài xế' : 'Khách hàng'}
                                                             </p>
                                                         </div>
                                                     </div>
