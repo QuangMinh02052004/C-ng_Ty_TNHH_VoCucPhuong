@@ -35,12 +35,25 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
         .filter((o, i, arr) => arr.findIndex(x => x.plate === o.plate) === i)  // unique
         .sort((a, b) => a.plate.localeCompare(b.plate));
 
+    // Tách phần "số đuôi" của biển — vd "60B04669" → "04669", "60S-086.12" → "086.12"
+    // Đây là phần khách quan trọng nhất để phân biệt giữa các xe cùng prefix
+    const plateTail = (plate: string): string => {
+        const m = plate.match(/[A-Z]([0-9].*)$/i);
+        return m ? m[1] : plate;
+    };
+
     const filteredOptions = (() => {
-        const q = search.trim().toLowerCase();
+        const q = search.replace(/\s+/g, '').toLowerCase();
         if (!q) return vehicleOptions;
-        return vehicleOptions.filter(o =>
-            o.plate.toLowerCase().includes(q) || o.desc.toLowerCase().includes(q)
-        );
+        return vehicleOptions.filter(o => {
+            const plateNorm = o.plate.replace(/\s+/g, '').toLowerCase();
+            const tail = plateTail(o.plate).toLowerCase();
+            return (
+                tail.includes(q) ||           // ưu tiên match số đuôi
+                plateNorm.includes(q) ||      // hoặc bất kỳ chỗ nào trong biển
+                o.desc.toLowerCase().includes(q)
+            );
+        });
     })();
 
     useEffect(() => {
@@ -194,13 +207,14 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
                                 <div className="text-sm text-gray-500 py-2 text-center">Đang tải danh sách xe...</div>
                             ) : vehicleOptions.length > 0 ? (
                                 <div>
-                                    {/* Tìm kiếm */}
+                                    {/* Tìm kiếm — chủ yếu gõ 5 số cuối */}
                                     <div className="relative mt-2">
                                         <input
                                             type="text"
+                                            inputMode="numeric"
                                             value={search}
                                             onChange={e => setSearch(e.target.value)}
-                                            placeholder="Tìm biển số..."
+                                            placeholder="Gõ 5 số cuối để tìm nhanh (vd. 04669)"
                                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
                                         />
                                     </div>
