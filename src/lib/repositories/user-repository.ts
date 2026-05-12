@@ -17,6 +17,7 @@ function mapRowToUser(row: Record<string, unknown>): User {
         phone: row.phone as string | null,
         avatar: row.avatar as string | null,
         role: row.role as UserRole,
+        vehiclePlate: row.vehicle_plate as string | null,
         createdAt: row.created_at as Date,
         updatedAt: row.updated_at as Date,
     };
@@ -89,6 +90,7 @@ export class UserRepository {
         // Map camelCase to snake_case
         const columnMap: Record<string, string> = {
             emailVerified: 'email_verified',
+            vehiclePlate: 'vehicle_plate',
             createdAt: 'created_at',
             updatedAt: 'updated_at',
         };

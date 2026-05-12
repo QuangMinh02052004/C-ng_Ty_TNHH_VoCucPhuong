@@ -4,7 +4,7 @@
  */
 
 // Enums
-export type UserRole = 'USER' | 'STAFF' | 'ADMIN';
+export type UserRole = 'USER' | 'STAFF' | 'ADMIN' | 'DRIVER';
 export type BookingStatus = 'PENDING' | 'CONFIRMED' | 'PAID' | 'CANCELLED' | 'COMPLETED';
 export type PaymentStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
 export type PaymentMethod = 'CASH' | 'BANK_TRANSFER' | 'QRCODE' | 'VNPAY' | 'MOMO';
@@ -19,6 +19,7 @@ export interface User {
     phone?: string | null;
     avatar?: string | null;
     role: UserRole;
+    vehiclePlate?: string | null; // chỉ dùng cho DRIVER
     createdAt: Date;
     updatedAt: Date;
 }

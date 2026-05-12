@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, Suspense } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
@@ -34,7 +34,13 @@ function LoginContent() {
             if (result?.error) {
                 setError(result.error);
             } else if (result?.ok) {
-                router.push(callbackUrl);
+                // Tài xế → vào trang quét QR riêng
+                const session = await getSession();
+                if (session?.user?.role === 'DRIVER') {
+                    router.push('/driver');
+                } else {
+                    router.push(callbackUrl);
+                }
                 router.refresh();
             }
         } catch (err) {

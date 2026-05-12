@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { BookingRepository, PaymentRepository } from '@/lib/repositories/booking-repository';
+import { query } from '@/lib/db';
+import { ensureScanSchema } from '@/lib/driver-schema';
 import { z } from 'zod';
 
 const checkinSchema = z.object({
@@ -108,6 +110,50 @@ export async function POST(request: NextRequest) {
 
     // Lấy lại thông tin booking với route
     const bookingWithDetails = await BookingRepository.findByCodeWithDetails(bookingCode) as any;
+
+    // Ghi log scan để admin có lịch sử (cùng bảng với log của tài xế)
+    try {
+      await ensureScanSchema();
+      const routeStr = bookingWithDetails?.route
+        ? `${bookingWithDetails.route.from} → ${bookingWithDetails.route.to}`
+        : '';
+      const dateStr = bookingWithDetails?.date
+        ? new Date(bookingWithDetails.date).toISOString().split('T')[0]
+        : null;
+      await query(
+        `INSERT INTO qr_scan_logs (
+          scanner_id, scanner_name, scanner_role, vehicle_plate,
+          booking_code, booking_status, was_paid, result,
+          customer_name, customer_phone, route,
+          departure_time, departure_date, seats,
+          pickup_method, pickup_address
+        ) VALUES (
+          @scannerId, @scannerName, @scannerRole, NULL,
+          @bookingCode, @bookingStatus, true, 'CHECKED_IN',
+          @customerName, @customerPhone, @route,
+          @departureTime, @departureDate, @seats,
+          @pickupMethod, @pickupAddress
+        )`,
+        {
+          scannerId: session.user.id,
+          scannerName: session.user.name,
+          scannerRole: session.user.role,
+          bookingCode: bookingWithDetails?.bookingCode || updatedBooking.bookingCode,
+          bookingStatus: bookingWithDetails?.status || updatedBooking.status,
+          customerName: bookingWithDetails?.customerName || updatedBooking.customerName,
+          customerPhone: bookingWithDetails?.customerPhone || updatedBooking.customerPhone,
+          route: routeStr,
+          departureTime: bookingWithDetails?.departureTime || updatedBooking.departureTime,
+          departureDate: dateStr,
+          seats: bookingWithDetails?.seats || updatedBooking.seats,
+          pickupMethod: bookingWithDetails?.pickupMethod ?? null,
+          pickupAddress: bookingWithDetails?.pickupAddress ?? null,
+        }
+      );
+    } catch (e) {
+      console.error('[CHECKIN_LOG]', e);
+      // Không fail check-in nếu chỉ log lỗi
+    }
 
     return NextResponse.json(
       {

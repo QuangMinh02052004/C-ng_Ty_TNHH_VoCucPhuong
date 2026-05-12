@@ -148,6 +148,40 @@ function BookingSuccessContent() {
         }
     };
 
+    const [downloading, setDownloading] = useState(false);
+
+    const handleDownloadImage = async () => {
+        if (!bookingData) return;
+        setDownloading(true);
+        try {
+            const el = document.getElementById('printable-ticket');
+            if (!el) return;
+            const html2canvas = (await import('html2canvas')).default;
+            const canvas = await html2canvas(el, {
+                backgroundColor: '#ffffff',
+                scale: 2, // chất lượng cao hơn để xem trên điện thoại sắc nét
+                useCORS: true,
+                logging: false,
+            });
+            canvas.toBlob((blob) => {
+                if (!blob) return;
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Ve-${bookingData.bookingCode}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+            }, 'image/png');
+        } catch (e) {
+            console.error('[Download ticket]', e);
+            alert('Không tải được vé. Vui lòng thử lại hoặc dùng nút In vé.');
+        } finally {
+            setDownloading(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-sky-50 to-white">
@@ -342,12 +376,13 @@ function BookingSuccessContent() {
 
                     {/* Action buttons — mobile stacked */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-5 no-print">
-                        <Link
-                            href={`/ve/${bookingData.bookingCode}`}
-                            className="text-center px-4 py-3 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 transition-colors text-sm"
+                        <button
+                            onClick={handleDownloadImage}
+                            disabled={downloading}
+                            className="px-4 py-3 bg-sky-600 text-white rounded-lg font-semibold hover:bg-sky-700 disabled:bg-sky-400 transition-colors text-sm"
                         >
-                            Xem & tải vé
-                        </Link>
+                            {downloading ? 'Đang tạo ảnh...' : 'Tải vé (PNG)'}
+                        </button>
                         <button
                             onClick={() => window.print()}
                             className="px-4 py-3 bg-white border border-gray-300 text-gray-800 rounded-lg font-semibold hover:bg-gray-50 transition-colors text-sm"

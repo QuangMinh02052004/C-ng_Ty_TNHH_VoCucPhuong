@@ -67,6 +67,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <Link href="/admin/users" className="block px-2 py-1.5 text-sm text-gray-700 rounded hover:bg-gray-100">
                             {sidebarOpen ? 'Người dùng' : 'U'}
                         </Link>
+                        <Link href="/admin/scan-logs" className="block px-2 py-1.5 text-sm text-gray-700 rounded hover:bg-gray-100">
+                            {sidebarOpen ? 'Lịch sử quét QR' : 'Q'}
+                        </Link>
                         {session.user.role === 'ADMIN' && (
                             <Link href="/admin/settings" className="block px-2 py-1.5 text-sm text-gray-700 rounded hover:bg-gray-100">
                                 {sidebarOpen ? 'Cài đặt' : 'S'}

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { UserRepository } from '@/lib/repositories/user-repository'
+import { query } from '@/lib/db'
+import { ensureScanSchema } from '@/lib/driver-schema'
 import bcrypt from 'bcryptjs'
 
 // GET: Lấy danh sách tất cả users
@@ -38,13 +40,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden - Admin only' }, { status: 403 })
     }
 
-    const { email, name, phone, password, role } = await request.json()
+    const { email, name, phone, password, role, vehiclePlate } = await request.json()
 
     if (!email?.trim() || !name?.trim() || !password?.trim()) {
       return NextResponse.json({ error: 'Email, tên và mật khẩu không được để trống' }, { status: 400 })
     }
 
-    const validRoles = ['USER', 'STAFF', 'ADMIN']
+    const validRoles = ['USER', 'STAFF', 'ADMIN', 'DRIVER']
     if (role && !validRoles.includes(role)) {
       return NextResponse.json({ error: 'Vai trò không hợp lệ' }, { status: 400 })
     }
@@ -55,6 +57,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email này đã được sử dụng' }, { status: 409 })
     }
 
+    // Đảm bảo cột vehicle_plate tồn tại
+    await ensureScanSchema()
+
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const user = await UserRepository.create({
@@ -64,6 +69,14 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
       role: role || 'USER',
     })
+
+    // Gán biển số xe nếu là tài xế
+    if (role === 'DRIVER' && vehiclePlate?.trim()) {
+      await query(
+        `UPDATE users SET vehicle_plate = @plate, updated_at = NOW() WHERE id = @id`,
+        { plate: vehiclePlate.trim().toUpperCase(), id: user.id }
+      )
+    }
 
     return NextResponse.json({ success: true, user: { id: user.id, email: user.email, name: user.name, role: user.role } }, { status: 201 })
   } catch (error) {

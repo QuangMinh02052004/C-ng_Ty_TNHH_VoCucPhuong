@@ -1,4 +1,4 @@
-import { UserRole } from '@prisma/client';
+import type { UserRole } from '@/lib/db-types';
 import 'next-auth';
 import 'next-auth/jwt';
 
@@ -10,6 +10,7 @@ declare module 'next-auth' {
         role: UserRole;
         phone?: string;
         avatar?: string;
+        vehiclePlate?: string | null;
     }
 
     interface Session {
@@ -20,6 +21,7 @@ declare module 'next-auth' {
             role: UserRole;
             phone?: string;
             avatar?: string;
+            vehiclePlate?: string | null;
         };
     }
 }
@@ -30,5 +32,6 @@ declare module 'next-auth/jwt' {
         role: UserRole;
         phone?: string;
         avatar?: string;
+        vehiclePlate?: string | null;
     }
 }
