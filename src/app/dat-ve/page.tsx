@@ -263,6 +263,8 @@ function DatVeContent() {
                 departureTime: formData.departureTime,
                 seats: selectedSeats.length,
                 selectedSeats,
+                pickupMethod: formData.pickupMethod,
+                pickupAddress: formData.pickupMethod === 'Dọc đường' ? formData.pickupStationName : '',
                 totalPrice: result.data.booking.totalPrice,
                 status: result.data.booking.status,
                 qrCodes: result.data.qrCodes,
