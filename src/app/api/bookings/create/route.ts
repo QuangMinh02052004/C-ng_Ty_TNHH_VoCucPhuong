@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { RouteRepository } from '@/lib/repositories/route-repository';
 import { BookingRepository } from '@/lib/repositories/booking-repository';
 import { generateBookingCode, formatDateVN } from '@/lib/utils';
@@ -47,19 +49,27 @@ const createBookingSchema = z.object({
     departureTime: z.string().min(1, 'Departure time is required'),
     seats: z.number().int().min(1).max(10),
     selectedSeats: z.array(z.number().int().min(1).max(28)).optional(), // ghế cụ thể từ SeatPicker
+    pickupMethod: z.enum(['Tại bến', 'Dọc đường']).optional(),
+    pickupAddress: z.string().optional(), // "07 - Bưu điện Trảng Bom"
     userId: z.string().optional(), // Nếu user đã đăng nhập
 });
 
 export async function POST(request: NextRequest) {
     try {
-        // ✅ Kiểm tra feature flag — admin có thể tắt đặt vé online tạm thời
-        const enabled = await isBookingEnabled();
-        if (!enabled) {
-            const message = await getMaintenanceMessage();
-            return NextResponse.json(
-                { success: false, error: 'BOOKING_DISABLED', message },
-                { status: 503 }
-            );
+        // Feature flag: cho phép tắt đặt vé online cho khách,
+        // nhưng admin vẫn đặt được bình thường (tự đặt qua trang công cộng)
+        const session = await getServerSession(authOptions);
+        const isAdmin = session?.user?.role === 'ADMIN';
+
+        if (!isAdmin) {
+            const enabled = await isBookingEnabled();
+            if (!enabled) {
+                const message = await getMaintenanceMessage();
+                return NextResponse.json(
+                    { success: false, error: 'BOOKING_DISABLED', message },
+                    { status: 503 }
+                );
+            }
         }
 
         const body = await request.json();
@@ -217,6 +227,8 @@ export async function POST(request: NextRequest) {
             route: `${route.from} → ${route.to}`,
             notes: booking.notes ?? null,
             selectedSeats: data.selectedSeats,
+            pickupMethod: data.pickupMethod,
+            pickupAddress: data.pickupAddress,
         }).catch(err => console.error('[TongHop] Failed to send:', err));
 
         // 10. Return response with booking info and QR codes
@@ -276,6 +288,8 @@ async function sendToTongHop(bookingData: {
     route: string;
     notes: string | null;
     selectedSeats?: number[];
+    pickupMethod?: 'Tại bến' | 'Dọc đường';
+    pickupAddress?: string;
 }) {
     // URL của hệ thống Tổng Hợp (vocucphuong-internal)
     const TONGHOP_URL = process.env.TONGHOP_URL || 'http://localhost:3001';

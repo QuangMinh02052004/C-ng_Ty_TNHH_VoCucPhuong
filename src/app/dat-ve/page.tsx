@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { routes as fallbackRoutes } from '@/data/routes';
@@ -22,8 +22,12 @@ function DatVeContent() {
         date: new Date().toISOString().split('T')[0], // Mặc định là ngày hôm nay
         departureTime: '',
         seats: 1,
+        pickupMethod: 'Tại bến' as 'Tại bến' | 'Dọc đường',
+        pickupStationId: '' as string,  // id của TH_PickupStations khi dọc đường
+        pickupStationName: '' as string, // tên trạm cache hiển thị
     });
     const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
+    const [pickupStations, setPickupStations] = useState<Array<{ id: number; displayStt: string; name: string }>>([]);
 
     // Tổng số ghế hiển thị = số ghế khách đã pick trên sơ đồ
     useEffect(() => {
@@ -92,6 +96,30 @@ function DatVeContent() {
         return selectedRoute.departureTime || [];
     };
 
+    // Xác định chiều tuyến: nếu xuất phát từ Long Khánh → đảo thứ tự trạm
+    const pickupDirection: 'sg-lk' | 'lk-sg' = useMemo(() => {
+        const from = (selectedRoute?.from || '').toLowerCase();
+        return from.includes('long khánh') || from.includes('long khanh') ? 'lk-sg' : 'sg-lk';
+    }, [selectedRoute]);
+
+    // Fetch trạm đón khi chọn "Dọc đường"
+    useEffect(() => {
+        if (formData.pickupMethod !== 'Dọc đường' || !selectedRoute) {
+            setPickupStations([]);
+            return;
+        }
+        const TONGHOP_URL = process.env.NEXT_PUBLIC_TONGHOP_URL || 'https://vocucphuongmanage.vercel.app';
+        fetch(`${TONGHOP_URL}/api/tong-hop/pickup-stations?direction=${pickupDirection}`, { cache: 'no-store' })
+            .then(res => res.json())
+            .then(data => { if (Array.isArray(data)) setPickupStations(data); })
+            .catch(() => setPickupStations([]));
+    }, [formData.pickupMethod, pickupDirection, selectedRoute]);
+
+    // Đổi tuyến → reset trạm đón đã chọn (vì thứ tự khác)
+    useEffect(() => {
+        setFormData(prev => ({ ...prev, pickupStationId: '', pickupStationName: '' }));
+    }, [pickupDirection]);
+
     const handleRouteChange = (routeId: string) => {
         const route = routes.find(r => r.id === routeId);
         setSelectedRoute(route || null);
@@ -155,6 +183,11 @@ function DatVeContent() {
             return;
         }
 
+        if (formData.pickupMethod === 'Dọc đường' && !formData.pickupStationId) {
+            setError('Vui lòng chọn trạm đón dọc đường!');
+            return;
+        }
+
         if (!selectedRoute) {
             setError('Vui lòng chọn tuyến đường!');
             return;
@@ -183,6 +216,8 @@ function DatVeContent() {
                 departureTime: formData.departureTime,
                 seats: selectedSeats.length,
                 selectedSeats,
+                pickupMethod: formData.pickupMethod,
+                pickupAddress: formData.pickupMethod === 'Dọc đường' ? formData.pickupStationName : '',
                 userId: session?.user?.id,
             };
 
@@ -246,8 +281,10 @@ function DatVeContent() {
         }
     };
 
-    // Trang bảo trì khi admin tắt đặt vé online
-    if (settingsLoaded && !bookingEnabled) {
+    const isAdmin = session?.user?.role === 'ADMIN';
+
+    // Trang bảo trì khi admin tắt đặt vé online — admin vẫn được vào đặt thử
+    if (settingsLoaded && !bookingEnabled && !isAdmin) {
         return (
             <div className="min-h-[70vh] py-16 bg-gradient-to-b from-sky-50 to-white">
                 <div className="container mx-auto px-4">
@@ -408,6 +445,65 @@ function DatVeContent() {
                                                 <span className="font-semibold text-sky-700">{selectedRoute.price.toLocaleString('vi-VN')} đ</span>
                                             </div>
                                         </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Điểm đón */}
+                            {selectedRoute && (
+                                <div className="bg-white p-6 rounded-xl border border-gray-200">
+                                    <h3 className="font-semibold text-lg mb-4 text-gray-900 border-b border-gray-200 pb-3">
+                                        Điểm đón
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-800 mb-2">
+                                                Cách đón <span className="text-red-500">*</span>
+                                            </label>
+                                            <select
+                                                value={formData.pickupMethod}
+                                                onChange={e => setFormData({
+                                                    ...formData,
+                                                    pickupMethod: e.target.value as 'Tại bến' | 'Dọc đường',
+                                                    pickupStationId: '',
+                                                    pickupStationName: '',
+                                                })}
+                                                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                                            >
+                                                <option value="Tại bến">Tại bến</option>
+                                                <option value="Dọc đường">Dọc đường</option>
+                                            </select>
+                                        </div>
+                                        {formData.pickupMethod === 'Dọc đường' && (
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-800 mb-2">
+                                                    Trạm đón <span className="text-red-500">*</span>
+                                                </label>
+                                                <select
+                                                    value={formData.pickupStationId}
+                                                    onChange={e => {
+                                                        const id = e.target.value;
+                                                        const st = pickupStations.find(s => String(s.id) === id);
+                                                        setFormData({
+                                                            ...formData,
+                                                            pickupStationId: id,
+                                                            pickupStationName: st ? `${st.displayStt} - ${st.name}` : '',
+                                                        });
+                                                    }}
+                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-sky-500 focus:border-transparent"
+                                                >
+                                                    <option value="">-- Chọn trạm đón --</option>
+                                                    {pickupStations.map(s => (
+                                                        <option key={s.id} value={s.id}>
+                                                            {s.displayStt} - {s.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <p className="text-xs text-gray-600 mt-1">
+                                                    Thứ tự trạm theo chiều {pickupDirection === 'lk-sg' ? 'Long Khánh → Sài Gòn' : 'Sài Gòn → Long Khánh'}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -616,6 +712,9 @@ function DatVeContent() {
                                             date: '',
                                             departureTime: '',
                                             seats: 1,
+                                            pickupMethod: 'Tại bến',
+                                            pickupStationId: '',
+                                            pickupStationName: '',
                                         });
                                         setSelectedRoute(null);
                                     }}

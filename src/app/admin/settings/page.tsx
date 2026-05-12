@@ -200,9 +200,8 @@ export default function AdminSettingsPage() {
                 <div className="flex items-start justify-between gap-4">
                     <div>
                         <p className="text-sm font-medium text-gray-900">Cho phép khách đặt vé online</p>
-                        <p className="text-xs text-gray-500 mt-1">
-                            Tắt để hiển thị banner bảo trì và chặn API tạo vé. Quản trị viên vẫn có thể tạo vé qua hệ
-                            thống nội bộ.
+                        <p className="text-xs text-gray-600 mt-1">
+                            Tắt để chặn KHÁCH đặt vé (hiện banner bảo trì + chặn API). Quản trị viên đăng nhập vẫn vào được /dat-ve và tạo vé bình thường.
                         </p>
                     </div>
                     <button
