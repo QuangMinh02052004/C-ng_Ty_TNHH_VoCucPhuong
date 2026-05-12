@@ -84,27 +84,15 @@ export async function ensureScanSchema() {
 }
 
 /**
- * Tìm trip hiện tại (chưa hoàn thành) của tài xế, tạo mới nếu chưa có.
- * Trả về id trip.
+ * Lấy trip đang mở (chưa hoàn thành) của tài xế.
+ * Trả về null nếu chưa bắt đầu chuyến.
  */
-export async function getOrCreateOpenTrip(
-    driverId: string,
-    driverName: string,
-    vehiclePlate: string | null
-): Promise<number> {
-    const existing = await query<{ id: number }>(
+export async function getOpenTripId(driverId: string): Promise<number | null> {
+    const rows = await query<{ id: number }>(
         `SELECT id FROM driver_trips
          WHERE driver_id = @driverId AND completed_at IS NULL
          ORDER BY started_at DESC LIMIT 1`,
         { driverId }
     );
-    if (existing.length > 0) return existing[0].id;
-
-    const created = await query<{ id: number }>(
-        `INSERT INTO driver_trips (driver_id, driver_name, vehicle_plate)
-         VALUES (@driverId, @driverName, @vehiclePlate)
-         RETURNING id`,
-        { driverId, driverName, vehiclePlate }
-    );
-    return created[0].id;
+    return rows.length > 0 ? rows[0].id : null;
 }

@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { BookingRepository } from '@/lib/repositories/booking-repository';
 import { query } from '@/lib/db';
-import { ensureScanSchema, getOrCreateOpenTrip } from '@/lib/driver-schema';
+import { ensureScanSchema, getOpenTripId } from '@/lib/driver-schema';
 import { z } from 'zod';
 
 const schema = z.object({
@@ -35,14 +35,16 @@ export async function POST(request: NextRequest) {
         }
         const { bookingCode } = validation.data;
 
-        const booking = (await BookingRepository.findByCodeWithDetails(bookingCode)) as any;
+        // Yêu cầu tài xế đã bấm "Bắt đầu chuyến"
+        const tripId = await getOpenTripId(session.user.id);
+        if (!tripId) {
+            return NextResponse.json(
+                { error: 'Vui lòng bấm "Bắt đầu chuyến" trước khi quét vé', code: 'NO_OPEN_TRIP' },
+                { status: 400 }
+            );
+        }
 
-        // Trip hiện tại (auto-create nếu chưa có)
-        const tripId = await getOrCreateOpenTrip(
-            session.user.id,
-            session.user.name,
-            session.user.vehiclePlate
-        );
+        const booking = (await BookingRepository.findByCodeWithDetails(bookingCode)) as any;
 
         if (!booking) {
             await query(
