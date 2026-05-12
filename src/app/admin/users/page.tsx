@@ -28,7 +28,7 @@ export default function UsersManagement() {
   const [showModal, setShowModal] = useState(false)
   const [editingRole, setEditingRole] = useState<'USER' | 'STAFF' | 'ADMIN' | 'DRIVER'>('USER')
   const [showCreateModal, setShowCreateModal] = useState(false)
-  const [createForm, setCreateForm] = useState({ name: '', email: '', phone: '', password: '', role: 'STAFF' as 'USER' | 'STAFF' | 'ADMIN' | 'DRIVER', vehiclePlate: '' })
+  const [createForm, setCreateForm] = useState({ name: '', email: '', phone: '', password: '', role: 'STAFF' as 'USER' | 'STAFF' | 'ADMIN' | 'DRIVER' })
   const [creating, setCreating] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
 
@@ -107,7 +107,7 @@ export default function UsersManagement() {
       const data = await res.json()
       if (!res.ok) { setCreateError(data.error || 'Lỗi tạo tài khoản'); return }
       setShowCreateModal(false)
-      setCreateForm({ name: '', email: '', phone: '', password: '', role: 'STAFF', vehiclePlate: '' })
+      setCreateForm({ name: '', email: '', phone: '', password: '', role: 'STAFF' })
       fetchUsers()
     } catch (err: any) {
       setCreateError(err.message)
@@ -157,7 +157,7 @@ export default function UsersManagement() {
           <p className="text-sm text-gray-600 mt-0.5">Tài khoản và phân quyền</p>
         </div>
         <button
-          onClick={() => { setCreateError(null); setCreateForm({ name: '', email: '', phone: '', password: '', role: 'STAFF', vehiclePlate: '' }); setShowCreateModal(true); }}
+          onClick={() => { setCreateError(null); setCreateForm({ name: '', email: '', phone: '', password: '', role: 'STAFF' }); setShowCreateModal(true); }}
           className="px-3 py-2 bg-gray-900 text-white rounded text-sm hover:bg-gray-800"
         >
           Tạo tài khoản
@@ -328,20 +328,12 @@ export default function UsersManagement() {
                   <option value="ADMIN">Quản trị viên</option>
                   <option value="DRIVER">Tài xế</option>
                 </select>
+                {createForm.role === 'DRIVER' && (
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Tài xế sẽ tự nhập biển số xe khi đăng nhập vào trang quét vé
+                  </p>
+                )}
               </div>
-              {createForm.role === 'DRIVER' && (
-                <div>
-                  <label className="block text-xs text-gray-700 mb-1">Biển số xe</label>
-                  <input
-                    type="text"
-                    value={createForm.vehiclePlate}
-                    onChange={e => setCreateForm(f => ({ ...f, vehiclePlate: e.target.value.toUpperCase() }))}
-                    placeholder="60S-086.12"
-                    className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm uppercase"
-                  />
-                  <p className="text-[10px] text-gray-500 mt-1">Hiện trên log mỗi lần tài xế quét vé</p>
-                </div>
-              )}
             </div>
 
             <div className="px-4 py-3 border-t border-gray-200 flex justify-end gap-2">

@@ -55,7 +55,7 @@ export const authOptions: NextAuthOptions = {
     ],
 
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             // Add user info to token
             if (user) {
                 token.id = user.id;
@@ -63,6 +63,10 @@ export const authOptions: NextAuthOptions = {
                 token.phone = user.phone;
                 token.avatar = user.avatar;
                 token.vehiclePlate = user.vehiclePlate ?? null;
+            }
+            // Cho phép client gọi update({ vehiclePlate }) để refresh JWT
+            if (trigger === 'update' && session?.vehiclePlate !== undefined) {
+                token.vehiclePlate = session.vehiclePlate ?? null;
             }
             return token;
         },
