@@ -291,7 +291,7 @@ async function sendToTongHop(bookingData: {
     pickupMethod?: 'Tại bến' | 'Dọc đường';
     pickupAddress?: string;
 }) {
-    // URL của hệ thống Tổng Hợp (vocucphuong-internal)
+    // URL của hệ thống Tổng Hợp (VoCucPhuong_PublicWeb)
     const TONGHOP_URL = process.env.TONGHOP_URL || 'http://localhost:3001';
 
     try {

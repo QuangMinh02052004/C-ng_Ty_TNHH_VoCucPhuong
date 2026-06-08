@@ -23,9 +23,11 @@ export default function DriverLayout({ children }: { children: React.ReactNode }
     // Tự nhận diện biển số thật dù người nhập dữ liệu có nhầm code/type
     // Plate VN: bắt đầu 2 chữ số + chữ cái (vd "60B04669", "60S-086.12")
     const detectPlate = (v: { code: string; type?: string }) => {
-        const isPlate = (s?: string) => !!s && /\d{2}\s?[A-Z]/i.test(s);
-        if (isPlate(v.code)) return { plate: v.code.toUpperCase(), desc: v.type || '' };
+        // Biển số đầy đủ: phải có 2 chữ số + chữ cái + ít nhất 3 chữ số (vd. 60B04669, 51B-04068)
+        // KHÔNG match mã loại xe ngắn như "28G", "50F" — đó chỉ là code dạng xe, không phải biển số.
+        const isPlate = (s?: string) => !!s && /\d{2}\s?[A-Z][-\s]?\d{3,5}/i.test(s);
         if (isPlate(v.type)) return { plate: (v.type as string).toUpperCase(), desc: v.code };
+        if (isPlate(v.code)) return { plate: v.code.toUpperCase(), desc: v.type || '' };
         return { plate: v.code.toUpperCase(), desc: v.type || '' };
     };
 

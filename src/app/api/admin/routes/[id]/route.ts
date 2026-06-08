@@ -57,7 +57,7 @@ export async function PATCH(
       );
     }
 
-    // Fire-and-forget reverse sync → vocucphuong-internal (TH_Routes)
+    // Fire-and-forget reverse sync → VoCucPhuong_PublicWeb (TH_Routes)
     const internalBase = process.env.VCP_INTERNAL_URL || 'https://vocucphuongmanage.vercel.app';
     fetch(`${internalBase}/api/admin/sync/routes/by-datve/${id}`, {
       method: 'PATCH',
